@@ -1,0 +1,27 @@
+{
+  "goblinAlive": true,
+  "goblinHp": 28,
+  "forestPotionFound": false,
+  "eventLog": [
+    "Alex says: \"lol funny\"",
+    "sam: The goblin strikes back and hits for 7 damage.",
+    "sam: Your reckless trick shot somehow connects for 12 damage.",
+    "The Dungeon Master calls for a roll: 14 + 3 = 17 vs DC 15.",
+    "sam: You attempt a reckless trick shot, trusting style and instinct.",
+    "sam attempts: \"i jump up and shoot goblin\"",
+    "Alex says: \"ok\"",
+    "sam says: \"ok i ll attack first\"",
+    "Alex says: \"lets fight\"",
+    "sam says: \"we should run\"",
+    "sam travels to forest.",
+    "sam travels to street.",
+    "Alex travels to forest.",
+    "Alex travels to street.",
+    "Alex travels to village.",
+    "Alex says into the empty bar: \"hello\"",
+    "The Dungeon Master does not understand Alex's action yet.",
+    "Alex attempts: \"hello\"",
+    "Alex travels to bar.",
+    "Alex travels to village."
+  ]
+}

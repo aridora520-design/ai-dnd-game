@@ -1,0 +1,34 @@
+{
+  "player": {
+    "location": "forest",
+    "hp": 100,
+    "maxHp": 100,
+    "inventory": [],
+    "stats": {
+      "strength": 2,
+      "dexterity": 3,
+      "defense": 1
+    }
+  },
+  "worldState": {
+    "goblinAlive": true,
+    "goblinHp": 18,
+    "forestPotionFound": false
+  },
+  "eventLog": [
+    "The goblin snaps back at you, but misses.",
+    "The goblin answers with an attack roll: 6 + 1 = 7.",
+    "You carve into the goblin for 12 damage.",
+    "You rolled 8 + 2 = 10.",
+    "The Dungeon Master calls for a Strength roll. DC 10.",
+    "You rush the goblin and commit to close combat.",
+    "You attempt: \"attack goblin with water\"",
+    "The goblin strikes back, but you avoid the blow.",
+    "The goblin answers with an attack roll: 5 + 1 = 6.",
+    "Your punch lands cleanly and deals 10 damage.",
+    "You rolled 16 + 2 = 18.",
+    "The Dungeon Master calls for a Strength roll. DC 10.",
+    "You tighten your fists and drive forward into close combat.",
+    "You attempt: \"i punch the goblin in the face\""
+  ]
+}

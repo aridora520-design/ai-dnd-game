@@ -1,0 +1,12 @@
+{
+  "name": "Alex",
+  "location": "forest",
+  "hp": 100,
+  "maxHp": 100,
+  "inventory": [],
+  "stats": {
+    "strength": 2,
+    "dexterity": 3,
+    "defense": 1
+  }
+}
