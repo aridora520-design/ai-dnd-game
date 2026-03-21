@@ -441,11 +441,13 @@ res.send(`
     </form>
 
     <p style="margin-top:30px; color:gray;">
-  Enter your name to begin. Then use the links in the game to move, fight enemies, and interact with other players.
-</p>
-<p style="color:#888;">
-  Try: "go to forest", "attack goblin", "rest"
-</p>
+      Enter your name to begin. Then use the links in the game to move, fight enemies, and interact with other players.
+    </p>
+
+    <p style="color:#888;">
+      Try: "go to forest", "attack goblin", "rest"
+    </p>
+
   </div>
 `);
     return null;
@@ -751,6 +753,11 @@ app.get("/use-item/:index", (req, res) => {
 
 app.get("/reset-world", (req, res) => {
   const playerName = req.query.player;
+
+  if (playerName !== "Hunt") { // ← your name here
+    return res.send("You are not allowed to reset the world.");
+  }
+
   const newWorld = createNewWorldState();
   saveWorldState(newWorld);
 
@@ -760,7 +767,7 @@ app.get("/reset-world", (req, res) => {
     fs.unlinkSync(filePath);
   }
 
-  res.redirect(`/?player=${encodeURIComponent(playerName || "Player1")}`);
+  res.redirect(`/?player=${encodeURIComponent(playerName)}`);
 });
 
 const PORT = process.env.PORT || 3000;
