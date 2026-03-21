@@ -441,9 +441,11 @@ res.send(`
     </form>
 
     <p style="margin-top:30px; color:gray;">
-      You can move, fight enemies, and interact with other players.
-    </p>
-
+  Enter your name to begin. Then use the links in the game to move, fight enemies, and interact with other players.
+</p>
+<p style="color:#888;">
+  Try: "go to forest", "attack goblin", "rest"
+</p>
   </div>
 `);
     return null;
