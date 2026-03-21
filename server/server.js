@@ -409,13 +409,43 @@ function requirePlayer(req, res) {
   const playerName = req.query.player;
 
   if (!playerName) {
-    res.send(`
-      <h1>Enter the World</h1>
-      <form method="GET" action="/">
-        <input type="text" name="player" placeholder="Enter your player name" />
-        <button type="submit">Start</button>
-      </form>
-    `);
+res.send(`
+  <div style="text-align:center; padding:40px; font-family:sans-serif;">
+    
+    <h1>AI Dungeon Game</h1>
+
+    <p style="font-size:18px;">
+      Type actions like a real adventure.
+    </p>
+
+    <p style="color:gray;">
+      Example: "I attack the goblin with my sword"
+    </p>
+
+    <form method="GET" action="/" style="margin-top:20px;">
+      <input 
+        type="text" 
+        name="player" 
+        placeholder="Enter your name"
+        style="padding:10px; font-size:16px; width:200px;"
+      />
+
+      <br><br>
+
+      <button 
+        type="submit"
+        style="padding:10px 20px; font-size:16px;"
+      >
+        Start Game
+      </button>
+    </form>
+
+    <p style="margin-top:30px; color:gray;">
+      You can move, fight enemies, and interact with other players.
+    </p>
+
+  </div>
+`);
     return null;
   }
 
@@ -731,6 +761,8 @@ app.get("/reset-world", (req, res) => {
   res.redirect(`/?player=${encodeURIComponent(playerName || "Player1")}`);
 });
 
+const PORT = process.env.PORT || 3000;
+
 app.listen(port, () => {
-  console.log(`Game running at http://localhost:${port}`);
+  console.log(`Game running at http://localhost:${PORT}`);
 });
