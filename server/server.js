@@ -477,8 +477,14 @@ app.get("/", (req, res) => {
         <p><strong>Goblin HP:</strong> ${worldState.goblinHp}</p>
       `;
     } else {
-      extra += `<p>The goblin's corpse is on the ground.</p>`;
-    }
+  const corpses = worldState.goblinCorpses || 0;
+
+  if (corpses === 1) {
+    extra += `<p>There is 1 goblin corpse on the ground.</p>`;
+  } else if (corpses > 1) {
+    extra += `<p>There are ${corpses} goblin corpses on the ground.</p>`;
+  }
+}
   }
 
   if (player.location === "bar") {
@@ -587,8 +593,26 @@ app.post("/action", (req, res) => {
       }
 
       if (worldState.goblinHp <= 0) {
-        worldState.goblinAlive = false;
-        addWorldEvent(worldState, `${player.name} kills the goblin. The forest falls silent.`);
+  worldState.goblinAlive = false;
+
+  // ✅ track corpse
+  worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
+
+  // ✅ better event chain
+  addWorldEvent(worldState, `${player.name} kills the goblin.`);
+  const lines = [
+  "With its dying breath, the goblin blows on a horn and calls for reinforcements.",
+  "As it falls, the goblin lets out a shrill horn blast.",
+  "The goblin collapses, but not before sounding a crude horn."
+];
+
+addWorldEvent(worldState, lines[Math.floor(Math.random() * lines.length)]);
+  addWorldEvent(worldState, "Another goblin rushes in!");
+
+  // ✅ respawn immediately (infinite test loop)
+  worldState.goblinAlive = true;
+  worldState.goblinHp = 40;
+}
       } else {
         const goblinRoll = rollD20();
         const goblinTotal = goblinRoll + 1;
