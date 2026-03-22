@@ -468,15 +468,20 @@ app.get("/", (req, res) => {
     `<a href="/move/${p}?player=${encodeURIComponent(playerName)}">${p}</a>`
   ).join("<br>");
 
-  let extra = "";
+ let extra = "";
 
-  if (player.location === "forest") {
-    if (worldState.goblinAlive) {
-      extra += `
-        <p>A goblin is lurking here.</p>
-        <p><strong>Goblin HP:</strong> ${worldState.goblinHp}</p>
-      `;
-    } else {
+if (player.location === "forest") {
+
+  if (worldState.goblinAlive) {
+    extra += `
+      <p>A goblin is lurking here.</p>
+      <p><strong>Goblin HP:</strong> ${worldState.goblinHp}</p>
+    `;
+  } else {
+    extra += `<p>The forest is eerily quiet...</p>`;
+  }
+
+  // 👇 THIS MUST BE OUTSIDE the goblinAlive check
   const corpses = worldState.goblinCorpses || 0;
 
   if (corpses === 1) {
@@ -484,7 +489,7 @@ app.get("/", (req, res) => {
   } else if (corpses > 1) {
     extra += `<p>There are ${corpses} goblin corpses on the ground.</p>`;
   }
-}
+
   }
 
   if (player.location === "bar") {
