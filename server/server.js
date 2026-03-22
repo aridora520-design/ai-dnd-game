@@ -533,6 +533,17 @@ app.post("/action", (req, res) => {
   const worldState = loadWorldState();
   const rawAction = req.body.action || "";
   const interpreted = interpretAction(rawAction);
+  const lowerAction = rawAction.toLowerCase();
+
+const flavor = {
+  mentionsJump: lowerAction.includes("jump"),
+  mentionsSpin: lowerAction.includes("spin") || lowerAction.includes("360"),
+  mentionsNoScope: lowerAction.includes("no scope") || lowerAction.includes("noscope"),
+  mentionsKick: lowerAction.includes("kick"),
+  mentionsPunch: lowerAction.includes("punch"),
+  mentionsStab: lowerAction.includes("stab"),
+  mentionsSlash: lowerAction.includes("slash")
+};
 
   if (interpreted.type === "say") {
     const othersHere = getOtherPlayersInSameLocation(player);
