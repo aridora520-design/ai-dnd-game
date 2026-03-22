@@ -552,67 +552,29 @@ app.post("/action", (req, res) => {
 
   addWorldEvent(worldState, `${player.name} attempts: "${rawAction}"`);
 
-  if (interpreted.type === "attack") {
-    if (player.location !== "forest") {
-      addWorldEvent(worldState, `${player.name} attacks at empty air.`);
-    } else if (!worldState.goblinAlive) {
-      addWorldEvent(worldState, `${player.name} finds the goblin already dead.`);
-    } else {
-      const flavor = parseFlavor(rawAction);
-      addWorldEvent(worldState, `${player.name}: ${narrateAttackIntro(interpreted.style, flavor)}`);
+ if (interpreted.type === "attack") {
+  if (player.location !== "forest" || !worldState.goblinAlive) {
+    addWorldEvent(worldState, `${player.name} swings at nothing.`);
+  } else {
+    const attackRoll = rollD20();
+    const total = attackRoll + player.stats.strength;
+    const dc = 12;
 
-      let dc = 10;
-      let modifier = interpreted.style === "ranged" ? player.stats.dexterity : player.stats.strength;
-      let damage = interpreted.style === "ranged"
-        ? 10 + Math.floor(Math.random() * 5)
-        : 8 + Math.floor(Math.random() * 5);
-
-      if (flavor.isTrickShot) {
-        dc = 15;
-      }
-
-      const roll = rollD20();
-      const total = roll + modifier;
-
-      addWorldEvent(worldState, `The Dungeon Master calls for a roll: ${roll} + ${modifier} = ${total} vs DC ${dc}.`);
-
-      if (roll === 20) {
-        const critDamage = damage + 10;
-        worldState.goblinHp = Math.max(0, worldState.goblinHp - critDamage);
-        addWorldEvent(worldState, `${player.name}: ${narrateCriticalHit(interpreted.style, critDamage, flavor)}`);
-      } else if (roll === 1) {
-        addWorldEvent(worldState, `${player.name}: ${narrateCriticalFail(interpreted.style, flavor)}`);
-        const selfDamage = 5;
-        player.hp = Math.max(0, player.hp - selfDamage);
-        addWorldEvent(worldState, `${player.name} suffers ${selfDamage} self-damage.`);
-      } else if (total >= dc) {
-        worldState.goblinHp = Math.max(0, worldState.goblinHp - damage);
-        addWorldEvent(worldState, `${player.name}: ${narratePlayerHit(interpreted.style, damage, flavor)}`);
-      } else {
-        addWorldEvent(worldState, `${player.name}: ${narratePlayerMiss(interpreted.style, flavor)}`);
-      }
+    if (total >= dc) {
+      const damage = 6 + Math.floor(Math.random() * 6);
+      worldState.goblinHp -= damage;
+      addWorldEvent(worldState, `${player.name}: ${narratePlayerHit(interpreted.style, damage, flavor)}`);
 
       if (worldState.goblinHp <= 0) {
-  worldState.goblinAlive = false;
+        worldState.goblinAlive = false;
+        worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
 
-  // ✅ track corpse
-  worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
+        addWorldEvent(worldState, `${player.name} kills the goblin.`);
+        addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.");
+        addWorldEvent(worldState, "Another goblin rushes in!");
 
-  // ✅ better event chain
-  addWorldEvent(worldState, `${player.name} kills the goblin.`);
-  const lines = [
-  "With its dying breath, the goblin blows on a horn and calls for reinforcements.",
-  "As it falls, the goblin lets out a shrill horn blast.",
-  "The goblin collapses, but not before sounding a crude horn."
-];
-
-addWorldEvent(worldState, lines[Math.floor(Math.random() * lines.length)]);
-  addWorldEvent(worldState, "Another goblin rushes in!");
-
-  // ✅ respawn immediately (infinite test loop)
-  worldState.goblinAlive = true;
-  worldState.goblinHp = 40;
-}
+        worldState.goblinAlive = true;
+        worldState.goblinHp = 40;
       } else {
         const goblinRoll = rollD20();
         const goblinTotal = goblinRoll + 1;
@@ -633,7 +595,11 @@ addWorldEvent(worldState, lines[Math.floor(Math.random() * lines.length)]);
           addWorldEvent(worldState, `${player.name}: ${narrateRespawn()}`);
         }
       }
+    } else {
+      addWorldEvent(worldState, `${player.name}: ${narratePlayerMiss(interpreted.style, flavor)}`);
     }
+  }
+} else if (interpreted.type === "defend") {
   } else if (interpreted.type === "defend") {
     if (player.location !== "forest" || !worldState.goblinAlive) {
       addWorldEvent(worldState, `${player.name} tries to defend, but nothing threatens them.`);

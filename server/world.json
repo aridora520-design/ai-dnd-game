@@ -1,6 +1,7 @@
 {
   "goblinAlive": true,
   "goblinHp": 28,
+  "goblinCorpses": 0,
   "forestPotionFound": false,
   "eventLog": [
     "Alex says: \"lol funny\"",
