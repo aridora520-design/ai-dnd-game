@@ -109,7 +109,7 @@ function loadPlayer(playerName) {
         defense: 1
       };
     }
-    
+
 if (!player.reputation) {
   player.reputation = {
     chaos: 0,
@@ -738,7 +738,7 @@ const flavor = {
             "Outcome: Kill",
             `Damage: ${damage}`,
             `Goblin Corpses: ${worldState.goblinCorpses}`,
-            "Threat: Reinforcements arrived"
+            "Threat: Reinforcements arrived",
              `Reputation: ${player.reputation.title}`, // 👈 ADD
              reaction ? `World: ${reaction}` : null
              ].filter(Boolean),   // 👈 THIS LINE MUST EXIST     // 👈 ADD
@@ -757,7 +757,7 @@ const flavor = {
             "Outcome: Hit",
             `Damage: ${damage}`,
             `Goblin HP: ${Math.max(0, worldState.goblinHp)}`,
-            "Threat: Still active"
+            "Threat: Still active",
             `Reputation: ${player.reputation.title}`, // 👈 ADD
             reaction ? `World: ${reaction}` : null     // 👈 ADD
           ].filter(Boolean),   // 👈 THIS LINE MUST EXIST
