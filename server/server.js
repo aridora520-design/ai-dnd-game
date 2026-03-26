@@ -25,6 +25,12 @@ function createNewPlayer(name) {
       strength: 2,
       dexterity: 3,
       defense: 1
+    },
+    reputation: {
+      chaos: 0,
+      honor: 0,
+      intimidation: 0,
+      title: "Unknown"
     }
   };
 }
@@ -300,10 +306,49 @@ function buildResultBlock(lines, flavor) {
   });
 
   if (flavor) {
-    result += `\nFlavor:\n${flavor}`;
+    result += `\n${flavor}`;
   }
 
   return result;
+}
+
+function updateReputation(player, changes) {
+  for (const key in changes) {
+    if (player.reputation[key] !== undefined) {
+      player.reputation[key] += changes[key];
+    }
+  }
+
+  player.reputation.title = getReputationTitle(player.reputation);
+}
+
+function getReputationTitle(rep) {
+  if (rep.chaos > 20 && rep.honor < 5) return "Agent of Chaos";
+  if (rep.honor > 20 && rep.chaos < 5) return "Local Hero";
+  if (rep.intimidation > 15) return "Feared Presence";
+  if (rep.chaos > 10 && rep.honor > 10) return "Unpredictable Force";
+
+  return "Unknown Figure";
+}
+
+function getReputationReaction(rep) {
+  if (rep.chaos > 15) {
+    return "Word spreads: you are not to be trusted with stability.";
+  }
+
+  if (rep.honor > 15) {
+    return "The locals speak well of you.";
+  }
+
+  if (rep.intimidation > 15) {
+    return "People step aside when you approach.";
+  }
+
+  if (rep.chaos > 8 && rep.honor > 8) {
+    return "No one is quite sure what you’ll do next.";
+  }
+
+  return null;
 }
 
 function getAttackFlavor(outcome) {
@@ -665,6 +710,7 @@ const flavor = {
 
     if (total >= dc) {
       const damage = 6 + Math.floor(Math.random() * 6);
+      updateReputation(player, { chaos: 1, intimidation: 1 });
       worldState.goblinHp -= damage;
 
       addWorldEvent(worldState, `${player.name}: ${narratePlayerHit(interpreted.style, damage, flavor)}`);
@@ -672,11 +718,12 @@ const flavor = {
       if (worldState.goblinHp <= 0) {
         worldState.goblinAlive = false;
         worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
+        updateReputation(player, { chaos: 3, intimidation: 2 });
 
         addWorldEvent(worldState, `${player.name} kills the goblin.`);
         addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.");
         addWorldEvent(worldState, "Another goblin rushes in!");
-
+        const reaction = getReputationReaction(player.reputation);
         const resultText = buildResultBlock(
           [
             "Action: Attack",
@@ -684,7 +731,9 @@ const flavor = {
             `Damage: ${damage}`,
             `Goblin Corpses: ${worldState.goblinCorpses}`,
             "Threat: Reinforcements arrived"
-          ],
+             `Reputation: ${player.reputation.title}`, // 👈 ADD
+             reaction ? `World: ${reaction}` : null
+             ].filter(Boolean),   // 👈 THIS LINE MUST EXIST     // 👈 ADD
           "You solved one problem loudly enough to create another."
         );
 
@@ -693,6 +742,7 @@ const flavor = {
         worldState.goblinAlive = true;
         worldState.goblinHp = 40;
       } else {
+        const reaction = getReputationReaction(player.reputation);
         const resultText = buildResultBlock(
           [
             "Action: Attack",
@@ -700,7 +750,9 @@ const flavor = {
             `Damage: ${damage}`,
             `Goblin HP: ${Math.max(0, worldState.goblinHp)}`,
             "Threat: Still active"
-          ],
+            `Reputation: ${player.reputation.title}`, // 👈 ADD
+            reaction ? `World: ${reaction}` : null     // 👈 ADD
+          ].filter(Boolean),   // 👈 THIS LINE MUST EXIST
           getAttackFlavor("hit")
         );
 
@@ -726,22 +778,25 @@ const flavor = {
         }
       }
     } else {
+      updateReputation(player, { chaos: 1 });
       addWorldEvent(worldState, `${player.name}: ${narratePlayerMiss(interpreted.style, flavor)}`);
-
+      const reaction = getReputationReaction(player.reputation);
       const resultText = buildResultBlock(
         [
           "Action: Attack",
           "Outcome: Miss",
           `Goblin HP: ${worldState.goblinHp}`,
-          "Threat: Still active"
-        ],
+          "Threat: Still active",
+           `Reputation: ${player.reputation.title}`,
+          reaction ? `World: ${reaction}` : null
+          ].filter(Boolean),   // 👈 THIS LINE MUST EXIST
         getAttackFlavor("miss")
       );
 
       addWorldEvent(worldState, `${player.name}\n${resultText}`);
     }
   }
-  
+
 } else if (interpreted.type === "defend") {
 } else if (interpreted.type === "defend") {
   } else if (interpreted.type === "defend") {
