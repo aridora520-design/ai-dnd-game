@@ -317,6 +317,10 @@ function parseFlavor(rawText) {
 function interpretAction(input) {
   const text = input.toLowerCase().trim();
 
+  if (text === "look" || text.includes("look")) {
+  return { type: "look" };
+  }
+
   if (!text) {
     return { type: "unknown" };
   }
@@ -567,6 +571,43 @@ const flavor = {
   }
 
   addWorldEvent(worldState, `${player.name} attempts: "${rawAction}"`);
+
+  if (interpreted.type === "look") {
+  const location = world[player.location];
+
+  let description = `📍 ${player.location.toUpperCase()}\n`;
+  description += `${location.description}\n\n`;
+
+  // 👀 Entities
+  if (player.location === "forest") {
+    if (worldState.goblinAlive) {
+      description += "👀 You see:\n- Goblin (hostile)\n";
+    }
+
+    const corpses = worldState.goblinCorpses || 0;
+    if (corpses > 0) {
+      description += `- ${corpses} Goblin corpse${corpses > 1 ? "s" : ""}\n`;
+    }
+  }
+
+  const others = getOtherPlayersInSameLocation(player);
+  if (others.length > 0) {
+    others.forEach(p => {
+      description += `- ${p.name} (player)\n`;
+    });
+  }
+
+  // 🚪 Exits
+  description += "\n🚪 Exits:\n";
+  location.paths.forEach(p => {
+    description += `- ${p}\n`;
+  });
+
+  addWorldEvent(worldState, `${player.name} looks around.\n${description}`);
+
+  saveWorldState(worldState);
+  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+}
 
  if (interpreted.type === "attack") {
   if (player.location !== "forest" || !worldState.goblinAlive) {
