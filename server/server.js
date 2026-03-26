@@ -601,7 +601,9 @@ if (player.location === "forest") {
     </form>
   `;
 
-  const eventsHtml = worldState.eventLog.map(event => `<li>${event}</li>`).join("");
+  const eventsHtml = worldState.eventLog
+  .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
+  .join("");
 
   res.send(`
     <h1>${player.name.toUpperCase()} — ${player.location.toUpperCase()}</h1>
