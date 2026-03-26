@@ -292,6 +292,43 @@ function narrateRespawn() {
   return "You awaken in the village, restored to full health.";
 }
 
+function buildResultBlock(lines, flavor) {
+  let result = "RESULT\n";
+
+  lines.forEach(line => {
+    result += `- ${line}\n`;
+  });
+
+  if (flavor) {
+    result += `\nFlavor:\n${flavor}`;
+  }
+
+  return result;
+}
+
+function getAttackFlavor(outcome) {
+  const options = {
+    hit: [
+      "Clean hit. Not elegant, but effective.",
+      "That landed with conviction.",
+      "The goblin regrets being in range."
+    ],
+    kill: [
+      "The goblin drops. The forest gets quieter for a moment.",
+      "Problem solved. Subtly was not involved.",
+      "A decisive finish."
+    ],
+    miss: [
+      "A bold attempt. Accuracy remains theoretical.",
+      "You commit fully. The hit does not.",
+      "The goblin survives, unfortunately encouraged."
+    ]
+  };
+
+  const pool = options[outcome] || ["Something happened."];
+  return randomChoice(pool);
+}
+
 function parseFlavor(rawText) {
   const text = rawText.toLowerCase();
 
@@ -611,7 +648,16 @@ const flavor = {
 
  if (interpreted.type === "attack") {
   if (player.location !== "forest" || !worldState.goblinAlive) {
-    addWorldEvent(worldState, `${player.name} swings at nothing.`);
+    const resultText = buildResultBlock(
+      [
+        "Action: Attack",
+        "Outcome: Invalid",
+        "Target: None"
+      ],
+      "You swing at nothing and achieve exactly that."
+    );
+
+    addWorldEvent(worldState, `${player.name}\n${resultText}`);
   } else {
     const attackRoll = rollD20();
     const total = attackRoll + player.stats.strength;
@@ -620,6 +666,7 @@ const flavor = {
     if (total >= dc) {
       const damage = 6 + Math.floor(Math.random() * 6);
       worldState.goblinHp -= damage;
+
       addWorldEvent(worldState, `${player.name}: ${narratePlayerHit(interpreted.style, damage, flavor)}`);
 
       if (worldState.goblinHp <= 0) {
@@ -630,9 +677,35 @@ const flavor = {
         addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.");
         addWorldEvent(worldState, "Another goblin rushes in!");
 
+        const resultText = buildResultBlock(
+          [
+            "Action: Attack",
+            "Outcome: Kill",
+            `Damage: ${damage}`,
+            `Goblin Corpses: ${worldState.goblinCorpses}`,
+            "Threat: Reinforcements arrived"
+          ],
+          "You solved one problem loudly enough to create another."
+        );
+
+        addWorldEvent(worldState, `${player.name}\n${resultText}`);
+
         worldState.goblinAlive = true;
         worldState.goblinHp = 40;
       } else {
+        const resultText = buildResultBlock(
+          [
+            "Action: Attack",
+            "Outcome: Hit",
+            `Damage: ${damage}`,
+            `Goblin HP: ${Math.max(0, worldState.goblinHp)}`,
+            "Threat: Still active"
+          ],
+          getAttackFlavor("hit")
+        );
+
+        addWorldEvent(worldState, `${player.name}\n${resultText}`);
+
         const goblinRoll = rollD20();
         const goblinTotal = goblinRoll + 1;
         const playerDefenseDc = 10 + player.stats.defense;
@@ -654,8 +727,22 @@ const flavor = {
       }
     } else {
       addWorldEvent(worldState, `${player.name}: ${narratePlayerMiss(interpreted.style, flavor)}`);
+
+      const resultText = buildResultBlock(
+        [
+          "Action: Attack",
+          "Outcome: Miss",
+          `Goblin HP: ${worldState.goblinHp}`,
+          "Threat: Still active"
+        ],
+        getAttackFlavor("miss")
+      );
+
+      addWorldEvent(worldState, `${player.name}\n${resultText}`);
     }
   }
+  
+} else if (interpreted.type === "defend") {
 } else if (interpreted.type === "defend") {
   } else if (interpreted.type === "defend") {
     if (player.location !== "forest" || !worldState.goblinAlive) {
