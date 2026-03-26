@@ -805,8 +805,6 @@ const flavor = {
     }
   }
 
-} else if (interpreted.type === "defend") {
-} else if (interpreted.type === "defend") {
   } else if (interpreted.type === "defend") {
     if (player.location !== "forest" || !worldState.goblinAlive) {
       addWorldEvent(worldState, `${player.name} tries to defend, but nothing threatens them.`);
