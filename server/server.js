@@ -109,7 +109,15 @@ function loadPlayer(playerName) {
         defense: 1
       };
     }
-
+    
+if (!player.reputation) {
+  player.reputation = {
+    chaos: 0,
+    honor: 0,
+    intimidation: 0,
+    title: "Unknown"
+  };
+}
     return player;
   }
 
