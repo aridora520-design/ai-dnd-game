@@ -407,6 +407,10 @@ function parseFlavor(rawText) {
 function interpretAction(input) {
   const text = input.toLowerCase().trim();
 
+  if (text === "help") {
+  return { type: "help" };
+  }
+
   if (text === "look" || text.includes("look")) {
   return { type: "look" };
   }
@@ -669,7 +673,23 @@ const flavor = {
 
   let description = `📍 ${player.location.toUpperCase()}\n`;
   description += `${location.description}\n\n`;
+// 🧠 Reputation-based ambient reaction
+const rep = player.reputation || { chaos: 0, honor: 0, intimidation: 0 };
 
+if (player.location === "bar" || player.location === "village") {
+
+  if (rep.chaos >= 10) {
+    description += "\nPeople glance at you, then quickly look away. No one wants trouble.\n";
+  }
+
+  else if (rep.honor >= 10) {
+    description += "\nA few locals nod in respect as you enter.\n";
+  }
+
+  else if (rep.intimidation >= 10) {
+    description += "\nThe room grows quieter. Conversations fade when you appear.\n";
+  }
+}
   // 👀 Entities
   if (player.location === "forest") {
     if (worldState.goblinAlive) {
@@ -697,6 +717,28 @@ const flavor = {
 
   addWorldEvent(worldState, `${player.name} looks around.\n${description}`);
 
+  saveWorldState(worldState);
+  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+}
+if (interpreted.type === "help") {
+  const helpText = `COMMANDS
+- look: inspect your surroundings
+- attack goblin / shoot goblin: attack in combat
+- defend: reduce incoming damage
+- run: try to escape combat
+- search: search the area
+- rest: recover HP in the bar
+- say hello: speak to nearby players
+
+TRY THIS LOOP
+- go to street
+- go to forest
+- attack goblin
+- run or defend if needed
+- return to bar
+- rest`;
+
+  addWorldEvent(worldState, `${player.name} asks for guidance.\n${helpText}`);
   saveWorldState(worldState);
   return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
 }
@@ -894,20 +936,52 @@ app.get("/rest", (req, res) => {
   const player = loadPlayer(playerName);
   const worldState = loadWorldState();
 
-  if (player.location === "bar") {
-    const healAmount = 20;
-    const oldHp = player.hp;
-    player.hp = Math.min(player.maxHp, player.hp + healAmount);
-    const actualHeal = player.hp - oldHp;
+ if (player.location === "bar") {
+  const rep = player.reputation || { chaos: 0, honor: 0, intimidation: 0 };
 
-    if (actualHeal > 0) {
-      addWorldEvent(worldState, `${player.name} rests in the bar and recovers ${actualHeal} HP.`);
-    } else {
-      addWorldEvent(worldState, `${player.name} rests in the bar, but is already at full health.`);
-    }
-  } else {
-    addWorldEvent(worldState, `${player.name} tries to rest in an unsafe place.`);
+  // CHAOS: denied service
+  if (rep.chaos >= 10) {
+    addWorldEvent(
+      worldState,
+      `${player.name} tries to rest, but the bartender blocks the way.\n"Not after what you've been doing. Get out."`
+    );
   }
+
+  // HONOR: bonus healing
+  else if (rep.honor >= 10) {
+    const healAmount = 30; // bonus heal
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+
+    addWorldEvent(
+      worldState,
+      `${player.name} is welcomed warmly by the tavern.\n"You've earned this."\nRecovers ${healAmount} HP.`
+    );
+  }
+
+  // INTIMIDATION: uneasy atmosphere
+  else if (rep.intimidation >= 10) {
+    const healAmount = 20;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+
+    addWorldEvent(
+      worldState,
+      `${player.name} sits down. The room goes quiet.\nNo one dares approach.\nRecovers ${healAmount} HP.`
+    );
+  }
+
+  // DEFAULT
+  else {
+    const healAmount = 20;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+
+    addWorldEvent(
+      worldState,
+      `${player.name} rests at the tavern and recovers ${healAmount} HP.`
+    );
+  }
+}else {
+  addWorldEvent(worldState, `${player.name} tries to rest in an unsafe place.`);
+}
 
   savePlayer(player);
   res.redirect(`/?player=${encodeURIComponent(playerName)}`);
@@ -969,6 +1043,6 @@ app.get("/reset-world", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(port, () => {
+app.listen(PORT, () => {
   console.log(`Game running at http://localhost:${PORT}`);
 });
