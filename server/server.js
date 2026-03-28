@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
-const port = 3000;
 
 app.use(express.urlencoded({ extended: true }));
 
@@ -332,8 +331,12 @@ function updateReputation(player, changes) {
 
 function getReputationTitle(rep) {
   if (rep.chaos > 20 && rep.honor < 5) return "Agent of Chaos";
-  if (rep.honor > 20 && rep.chaos < 5) return "Local Hero";
-  if (rep.intimidation > 15) return "Feared Presence";
+  if (rep.honor >= 20 && rep.chaos < 5) return "Paragon of Order";
+  if (rep.honor >= 10 && rep.chaos < 10) return "Honored Guardian";
+  if (rep.honor >= 5 && rep.chaos < 10) return "Trusted Soul";
+  if (rep.intimidation >= 20) return "Warlord";
+  if (rep.intimidation >= 10) return "Enforcer";
+  if (rep.intimidation >= 5) return "Menacing Figure";
   if (rep.chaos > 10 && rep.honor > 10) return "Unpredictable Force";
 
   return "Unknown Figure";
@@ -407,6 +410,10 @@ function parseFlavor(rawText) {
 function interpretAction(input) {
   const text = input.toLowerCase().trim();
 
+  if (text.includes("threaten") || text.includes("intimidate")) {
+  return { type: "threaten" };
+}
+
   if (text === "help") {
   return { type: "help" };
   }
@@ -431,9 +438,28 @@ function interpretAction(input) {
     return { type: "run" };
   }
 
+  
   if (text.includes("defend") || text.includes("block") || text.includes("brace")) {
     return { type: "defend" };
   }
+
+  if (text.includes("drink") || text.includes("ale") || text.includes("beer")) {
+  return { type: "drink" };
+}
+
+if (text.includes("eat") || text.includes("meal") || text.includes("food")) {
+  return { type: "eat" };
+}
+
+if (
+  text.includes("bar fight") ||
+  text.includes("barfight") ||
+  text.includes("start a fight") ||
+  text.includes("punch someone in the bar") ||
+  text.includes("fight in the bar")
+) {
+  return { type: "barfight" };
+}
 
   if (text.includes("search") || text.includes("look around") || text.includes("inspect")) {
     return { type: "search" };
@@ -590,13 +616,13 @@ if (player.location === "forest") {
 
   }
 
-  if (player.location === "bar") {
-    extra += `
-      <p>You can rest here and recover your strength.</p>
-      <a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a>
-    `;
-  }
-
+if (player.location === "bar") {
+  extra += `
+    <p>You can rest here and recover your strength.</p>
+    <a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a>
+    <p>Bar actions to try: drink, eat, barfight</p>
+  `;
+}
   extra += `
     <p><strong>Type an action:</strong></p>
     <form method="POST" action="/action?player=${encodeURIComponent(playerName)}">
@@ -721,21 +747,26 @@ if (player.location === "bar" || player.location === "village") {
   return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
 }
 if (interpreted.type === "help") {
-  const helpText = `COMMANDS
+    const helpText = `COMMANDS
 - look: inspect your surroundings
 - attack goblin / shoot goblin: attack in combat
-- defend: reduce incoming damage
+- defend: reduce incoming damage and build honor
 - run: try to escape combat
 - search: search the area
 - rest: recover HP in the bar
+- drink: have a drink in the bar
+- eat: have a meal in the bar
+- barfight: start trouble in the bar
 - say hello: speak to nearby players
+- threaten: intimidate others in the right setting
 
 TRY THIS LOOP
 - go to street
 - go to forest
 - attack goblin
-- run or defend if needed
+- defend or run if needed
 - return to bar
+- drink or eat
 - rest`;
 
   addWorldEvent(worldState, `${player.name} asks for guidance.\n${helpText}`);
@@ -767,12 +798,17 @@ TRY THIS LOOP
 
       addWorldEvent(worldState, `${player.name}: ${narratePlayerHit(interpreted.style, damage, flavor)}`);
 
+if (damage >= 8) {
+  updateReputation(player, { intimidation: 1 });
+  addWorldEvent(worldState, `${player.name}'s brutal strike shakes the battlefield.\nIntimidation +1.`);
+}
       if (worldState.goblinHp <= 0) {
         worldState.goblinAlive = false;
         worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
         updateReputation(player, { chaos: 3, intimidation: 2 });
 
         addWorldEvent(worldState, `${player.name} kills the goblin.`);
+        addWorldEvent(worldState, `${player.name} stands over the fallen goblin.\nIntimidation +2.`);
         addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.");
         addWorldEvent(worldState, "Another goblin rushes in!");
         const reaction = getReputationReaction(player.reputation);
@@ -830,6 +866,7 @@ TRY THIS LOOP
         }
       }
     } else {
+
       updateReputation(player, { chaos: 1 });
       addWorldEvent(worldState, `${player.name}: ${narratePlayerMiss(interpreted.style, flavor)}`);
       const reaction = getReputationReaction(player.reputation);
@@ -857,13 +894,15 @@ TRY THIS LOOP
       const goblinTotal = goblinRoll + 1;
       const defendDc = 14 + player.stats.defense;
 
-      if (goblinTotal >= defendDc) {
-        const reducedDamage = 3;
-        player.hp = Math.max(0, player.hp - reducedDamage);
-        addWorldEvent(worldState, `${player.name}: ${narrateDefendPartial(reducedDamage)}`);
-      } else {
-        addWorldEvent(worldState, `${player.name}: ${narrateDefendSuccess()}`);
-      }
+     if (goblinTotal >= defendDc) {
+  const reducedDamage = 3;
+  player.hp = Math.max(0, player.hp - reducedDamage);
+  updateReputation(player, { honor: 1 });
+  addWorldEvent(worldState, `${player.name}: ${narrateDefendPartial(reducedDamage)}\nHonor +1.`);
+} else {
+  updateReputation(player, { honor: 1 });
+  addWorldEvent(worldState, `${player.name}: ${narrateDefendSuccess()}\nHonor +1.`);
+}
 
       if (player.hp <= 0) {
         handlePlayerDeath(player, worldState);
@@ -877,14 +916,15 @@ TRY THIS LOOP
       const total = roll + player.stats.dexterity;
       const dc = 11;
 
-      if (total >= dc) {
-        player.location = "street";
-        addWorldEvent(worldState, `${player.name}: ${narrateRunSuccess()}`);
-      } else {
+     if (total >= dc) {
+  player.location = "street";
+  updateReputation(player, { honor: 1 });
+  addWorldEvent(worldState, `${player.name}: ${narrateRunSuccess()}\nHonor +1.`);
+} else {
         const goblinDamage = 5;
         player.hp = Math.max(0, player.hp - goblinDamage);
         addWorldEvent(worldState, `${player.name}: ${narrateRunFail(goblinDamage)}`);
-
+updateReputation(player, { intimidation: 1 });
         if (player.hp <= 0) {
           handlePlayerDeath(player, worldState);
         }
@@ -900,6 +940,67 @@ TRY THIS LOOP
     } else {
       addWorldEvent(worldState, `${player.name} searches the forest, but finds nothing new.`);
     }
+    } else if (interpreted.type === "drink") {
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`);
+  } else {
+    const healAmount = 10;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+    updateReputation(player, { honor: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.`
+    );
+  }
+} else if (interpreted.type === "eat") {
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`);
+  } else {
+    const healAmount = 12;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+    updateReputation(player, { honor: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} eats a warm meal.\nRecovers ${healAmount} HP.\nHonor +1.`
+    );
+  }
+  } else if (interpreted.type === "threaten") {
+  if (player.location === "forest") {
+    updateReputation(player, { intimidation: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} lets out a terrifying threat into the forest.\nIntimidation +1.`
+    );
+  } else if (player.location === "bar") {
+    updateReputation(player, { intimidation: 1, chaos: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} makes a chilling threat in the bar.\nPeople go silent.\nIntimidation +1. Chaos +1.`
+    );
+  } else {
+    addWorldEvent(
+      worldState,
+      `${player.name} tries to act intimidating, but nothing really happens.`
+    );
+  }
+
+} else if (interpreted.type === "barfight") {
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`);
+  } else {
+    const damage = 8;
+    player.hp = Math.max(0, player.hp - damage);
+    updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.`
+    );
+  }
   } else {
     addWorldEvent(worldState, `The Dungeon Master does not understand ${player.name}'s action yet.`);
   }
