@@ -633,96 +633,232 @@ function createEventTemplate(eventId, location, data = {}) {
   const now = Date.now();
 
   const templates = {
+    // =========================
+    // BAR CHAINS
+    // =========================
+
+    bar_drunk_accusation: {
+      id: "bar_drunk_accusation",
+      name: "Drunk Accusation",
+      chainId: "tavern_trouble",
+      phase: 1,
+      location,
+      phaseLabel: "accusation",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
+      involvedNpc: ["Drunk Patron", "Traveling Merchant", "Bartender Rowan"],
+      tags: ["social", "bar"],
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "bar_brawl", location: "bar" },
+      nextOnFail: { eventId: "bar_brawl", location: "bar" },
+      nextOnIgnore: { eventId: "bar_brawl", location: "bar" }
+    },
+
     bar_brawl: {
       id: "bar_brawl",
       name: "Bar Brawl",
+      chainId: "tavern_trouble",
+      phase: 2,
       location,
-      phase: "active",
+      phaseLabel: "fight",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
-      text: "A drunk patron flips a stool and lunges at a traveling merchant. The room jolts into motion.",
+      text: "The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
       involvedNpc: ["Drunk Patron", "Traveling Merchant", "Bartender Rowan"],
-      tags: ["social", "violence", "bar"],
-      state: {
-        merchantInjured: false,
-        drunkSubdued: false,
-        propertyDamage: 0
-      }
+      tags: ["violence", "bar"],
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_guard_response", location: "street" },
+      nextOnFail: { eventId: "street_guard_response", location: "street" },
+      nextOnIgnore: { eventId: "street_guard_response", location: "street" }
     },
+
     bar_thief: {
       id: "bar_thief",
       name: "Thief Incident",
+      chainId: "thief_chain",
+      phase: 1,
       location,
-      phase: "active",
+      phaseLabel: "snatch",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
       text: "A quick-handed thief snatches a coin purse and bolts toward the door.",
       involvedNpc: ["Unknown Thief", "Traveling Merchant"],
       tags: ["crime", "bar"],
-      state: {
-        thiefEscaped: false,
-        purseRecovered: false
-      }
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_chase", location: "street" },
+      nextOnFail: { eventId: "street_chase", location: "street" },
+      nextOnIgnore: { eventId: "street_chase", location: "street" }
     },
+
     bar_fire: {
       id: "bar_fire",
       name: "Lantern Fire",
+      chainId: "bar_fire_chain",
+      phase: 1,
       location,
-      phase: "active",
+      phaseLabel: "spark",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
       text: "A hanging lantern crashes and oil splashes across the floor. Fire starts licking up a table leg.",
       involvedNpc: ["Bartender Rowan"],
       tags: ["environment", "bar", "danger"],
-      state: {
-        fireContained: false,
-        barDamaged: false
-      }
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "bar_fire_spreading", location: "bar" },
+      nextOnFail: { eventId: "bar_fire_spreading", location: "bar" },
+      nextOnIgnore: { eventId: "bar_fire_spreading", location: "bar" }
     },
+
+    bar_fire_spreading: {
+      id: "bar_fire_spreading",
+      name: "Fire Spreading",
+      chainId: "bar_fire_chain",
+      phase: 2,
+      location,
+      phaseLabel: "spreading",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "The flames spread across spilled alcohol and crawl up the wall. Panic starts to ripple through the bar.",
+      involvedNpc: ["Bartender Rowan"],
+      tags: ["environment", "bar", "danger"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    // =========================
+    // STREET CHAINS
+    // =========================
+
+    street_guard_response: {
+      id: "street_guard_response",
+      name: "Guard Response",
+      chainId: "tavern_trouble",
+      phase: 3,
+      location,
+      phaseLabel: "response",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+      involvedNpc: ["Town Guard"],
+      tags: ["street", "guard"],
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_crackdown", location: "street" },
+      nextOnFail: { eventId: "street_crackdown", location: "street" },
+      nextOnIgnore: { eventId: "street_crackdown", location: "street" }
+    },
+
+    street_chase: {
+      id: "street_chase",
+      name: "Street Chase",
+      chainId: "thief_chain",
+      phase: 2,
+      location,
+      phaseLabel: "chase",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "The chase spills into the street. The thief darts between carts and townsfolk, trying to disappear.",
+      involvedNpc: ["Unknown Thief", "Town Guard"],
+      tags: ["street", "crime"],
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_guard_stop", location: "street" },
+      nextOnFail: { eventId: "street_guard_stop", location: "street" },
+      nextOnIgnore: { eventId: "street_guard_stop", location: "street" }
+    },
+
     street_cart: {
       id: "street_cart",
       name: "Runaway Cart",
+      chainId: "cart_chain",
+      phase: 1,
       location,
-      phase: "active",
+      phaseLabel: "runaway",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
       text: "A horse panics. A loaded cart jerks loose and barrels down the street.",
       involvedNpc: ["Cart Driver", "Town Guard"],
       tags: ["environment", "street"],
-      state: {
-        cartStopped: false,
-        casualties: 0
-      }
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_debris", location: "street" },
+      nextOnFail: { eventId: "street_debris", location: "street" },
+      nextOnIgnore: { eventId: "street_debris", location: "street" }
     },
+
+    street_debris: {
+      id: "street_debris",
+      name: "Street Debris",
+      chainId: "cart_chain",
+      phase: 2,
+      location,
+      phaseLabel: "aftermath",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "Broken wood, spilled goods, and frightened townsfolk clog the street after the crash.",
+      involvedNpc: ["Cart Driver"],
+      tags: ["street", "aftermath"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
     street_guard_stop: {
       id: "street_guard_stop",
       name: "Guard Confrontation",
+      chainId: "guard_pressure",
+      phase: 1,
       location,
-      phase: "active",
+      phaseLabel: "stop",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
       text: "A town guard plants a spear in your path and demands to know what you’re up to.",
       involvedNpc: ["Town Guard"],
       tags: ["social", "street"],
-      state: {
-        guardAppeased: false,
-        guardProvoked: false
-      }
+      nextOnSuccess: null,
+      nextOnMixed: { eventId: "street_crackdown", location: "street" },
+      nextOnFail: { eventId: "street_crackdown", location: "street" },
+      nextOnIgnore: { eventId: "street_crackdown", location: "street" }
     },
+
+    street_crackdown: {
+      id: "street_crackdown",
+      name: "Street Crackdown",
+      chainId: "guard_pressure",
+      phase: 2,
+      location,
+      phaseLabel: "crackdown",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "The guards tighten control of the street. People back away, and every sudden move draws attention.",
+      involvedNpc: ["Town Guard"],
+      tags: ["street", "guard", "aftermath"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    // =========================
+    // EXISTING FOREST EVENT
+    // =========================
+
     forest_hunter: {
       id: "forest_hunter",
       name: "Wounded Hunter",
+      chainId: "hunter_chain",
+      phase: 1,
       location,
-      phase: "active",
+      phaseLabel: "wounded",
       createdAt: now,
       expiresInMs: 10 * 60 * 1000,
       text: "Behind a fallen log, a wounded hunter calls weakly for help.",
       involvedNpc: ["Wounded Hunter"],
       tags: ["forest", "aid"],
-      state: {
-        hunterSaved: false,
-        hunterAbandoned: false
-      }
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
     }
   };
 
@@ -794,10 +930,46 @@ function closeActiveEvent(worldState, locationKey) {
     worldState.locationStates[locationKey].activeEvent = null;
   }
 }
+function getNextChainTarget(currentEvent, outcome) {
+  if (!currentEvent) return null;
 
+  if (outcome === "success") return currentEvent.nextOnSuccess || null;
+  if (outcome === "mixed") return currentEvent.nextOnMixed || null;
+  if (outcome === "fail") return currentEvent.nextOnFail || null;
+  if (outcome === "ignore") return currentEvent.nextOnIgnore || null;
+
+  return null;
+}
+
+function advanceEventChain(worldState, currentLocationKey, currentEvent, outcome) {
+  const nextTarget = getNextChainTarget(currentEvent, outcome);
+
+  // close current event
+  closeActiveEvent(worldState, currentLocationKey);
+
+  if (!nextTarget || !nextTarget.eventId) {
+    return null;
+  }
+
+  const nextLocation = nextTarget.location || currentLocationKey;
+  const nextEvent = createEventTemplate(nextTarget.eventId, nextLocation);
+
+  if (!nextEvent) {
+    return null;
+  }
+
+  worldState.locationStates[nextLocation].activeEvent = nextEvent;
+  addWorldEvent(
+    worldState,
+    `[CHAIN EVENT — ${nextLocation.toUpperCase()}] ${nextEvent.text}`,
+    nextLocation
+  );
+
+  return nextEvent;
+}
 function getLocationEventPool(locationKey, worldState, player) {
   if (locationKey === "bar") {
-    const pool = ["bar_brawl", "bar_thief"];
+    const pool = ["bar_drunk_accusation", "bar_thief"];
     if (!worldState.locationStates.bar.stateFlags.barOnFire) {
       pool.push("bar_fire");
     }
@@ -816,7 +988,6 @@ function getLocationEventPool(locationKey, worldState, player) {
 
   return [];
 }
-
 function maybeTriggerLocationEvent(worldState, locationKey, player, reason = "ambient") {
   const locState = worldState.locationStates[locationKey];
   if (!locState) return null;
@@ -979,6 +1150,76 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
   const eventObj = locState.activeEvent;
 
+  // =========================
+  // BAR: DRUNK ACCUSATION
+  // =========================
+  if (eventObj.id === "bar_drunk_accusation") {
+    if (reaction.intent === "talk") {
+      const check = resolveCheck({
+        bonus: player.stats.presence + Math.floor(player.reputation.honor / 5),
+        dc: 12
+      });
+
+      if (check.tier === "great" || check.tier === "success") {
+        updateReputation(player, { honor: 2 });
+        addWorldEvent(
+          worldState,
+          `${player.name} gets between them with a steady voice. The drunk grumbles, but the merchant backs off and the moment cools.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
+        return true;
+      }
+
+      if (check.tier === "mixed") {
+        updateReputation(player, { honor: 1 });
+        addWorldEvent(
+          worldState,
+          `${player.name} nearly settles it, but the drunk shoves the merchant anyway. The tension snaps.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
+        return true;
+      }
+
+      updateReputation(player, { chaos: 1 });
+      addWorldEvent(
+        worldState,
+        `${player.name}'s attempt to calm things down fails. The accusation turns ugly fast.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
+      return true;
+    }
+
+    if (reaction.intent === "attack" || reaction.intent === "threaten") {
+      updateReputation(player, { chaos: 1, intimidation: 1 });
+      addWorldEvent(
+        worldState,
+        `${player.name} escalates the confrontation. The room tips from argument into violence.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
+      return true;
+    }
+
+    if (reaction.intent === "observe" || reaction.intent === "flee") {
+      addWorldEvent(
+        worldState,
+        `${player.name} hangs back. No one steps in before fists start flying.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
+      return true;
+    }
+
+    addWorldEvent(worldState, `${player.name} hesitates while the accusation boils over.`, locationKey);
+    return true;
+  }
+
+  // =========================
+  // BAR: BRAWL
+  // =========================
   if (eventObj.id === "bar_brawl") {
     if (reaction.intent === "talk") {
       const check = resolveCheck({
@@ -988,22 +1229,37 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "great" || check.tier === "success") {
         updateReputation(player, { honor: 2 });
-        addWorldEvent(worldState, `${player.name} cuts through the chaos with a commanding voice. The drunk backs down and the merchant stops swinging.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} cuts through the chaos with a commanding voice. Somehow, the worst of the fight breaks apart.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
       if (check.tier === "mixed") {
-        updateReputation(player, { honor: 1 });
         const damage = 4;
         player.hp = Math.max(0, player.hp - damage);
-        addWorldEvent(worldState, `${player.name} nearly calms things down, but catches a stray bottle for ${damage} damage.`, locationKey);
+        worldState.locationStates.bar.stateFlags.barDamaged = true;
+        updateReputation(player, { honor: 1 });
+        addWorldEvent(
+          worldState,
+          `${player.name} nearly restores order, but catches a bottle for ${damage} damage. The noise spills out into the street.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
-      updateReputation(player, { chaos: 1 });
       worldState.locationStates.bar.stateFlags.barDamaged = true;
-      addWorldEvent(worldState, `${player.name} tries to calm the room, but the attempt only gets drowned out by violence. More furniture breaks.`, locationKey);
+      updateReputation(player, { chaos: 1 });
+      addWorldEvent(
+        worldState,
+        `${player.name} fails to calm the brawl. Furniture breaks, people shout, and someone has clearly sent for the guards.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
@@ -1018,96 +1274,134 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       const check = resolveCheck({ bonus, dc: 12 });
 
       if (check.tier === "great" || check.tier === "success") {
+        worldState.locationStates.bar.stateFlags.barDamaged = true;
+
         if (reaction.intent === "attack") {
           updateReputation(player, { intimidation: 2, chaos: 1 });
-          addWorldEvent(worldState, `${player.name} crashes into the fight and ends it by force. The drunk patron is pinned hard to the floor.`, locationKey);
+          addWorldEvent(
+            worldState,
+            `${player.name} crashes into the melee and forces it to end the hard way. But the bar is wrecked and the street heard everything.`,
+            locationKey
+          );
         } else {
           updateReputation(player, { honor: 2 });
-          addWorldEvent(worldState, `${player.name} gets between the combatants and breaks the momentum of the fight.`, locationKey);
+          addWorldEvent(
+            worldState,
+            `${player.name} throws themselves into the chaos and keeps it from getting worse, but the damage is already done.`,
+            locationKey
+          );
         }
 
-        closeActiveEvent(worldState, locationKey);
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
-      if (check.tier === "mixed") {
-        const damage = 6;
-        player.hp = Math.max(0, player.hp - damage);
-        updateReputation(player, { intimidation: 1 });
-        worldState.locationStates.bar.stateFlags.barDamaged = true;
-        addWorldEvent(worldState, `${player.name} throws themselves into the brawl. It helps, but not before taking ${damage} damage in the mess.`, locationKey);
-        return true;
-      }
-
-      const damage = 8;
+      const damage = 6;
       player.hp = Math.max(0, player.hp - damage);
-      updateReputation(player, { chaos: 1 });
       worldState.locationStates.bar.stateFlags.barDamaged = true;
-      addWorldEvent(worldState, `${player.name} is swallowed by the chaos and takes ${damage} damage. The brawl gets worse.`, locationKey);
+      updateReputation(player, { chaos: 1, intimidation: 1 });
+      addWorldEvent(
+        worldState,
+        `${player.name} gets swallowed by the bar brawl and takes ${damage} damage. The guards are definitely getting involved now.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
-      updateReputation(player, { honor: -1 });
       worldState.locationStates.bar.stateFlags.barDamaged = true;
-      addWorldEvent(worldState, `${player.name} stays clear while the fight tears through the room. No one forgets who stepped in—and who didn’t.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      updateReputation(player, { honor: -1 });
+      addWorldEvent(
+        worldState,
+        `${player.name} backs off while the bar tears itself apart. The disturbance spills toward the street.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
       return true;
     }
 
-    addWorldEvent(worldState, `${player.name} reacts awkwardly, but the bar fight keeps raging.`, locationKey);
+    addWorldEvent(worldState, `${player.name} reacts awkwardly, but the fight only grows louder.`, locationKey);
     return true;
   }
 
+  // =========================
+  // BAR: THIEF
+  // =========================
   if (eventObj.id === "bar_thief") {
     if (reaction.intent === "attack" || reaction.intent === "help") {
-      const check = resolveCheck({ bonus: player.stats.dexterity + 1, dc: 13 });
+      const statBonus = reaction.intent === "attack" ? player.stats.dexterity : player.stats.dexterity + 1;
+      const check = resolveCheck({ bonus: statBonus, dc: 13 });
 
       if (check.tier === "great" || check.tier === "success") {
         updateReputation(player, { honor: 2 });
         worldState.locationStates.bar.stateFlags.thiefActive = false;
-        addWorldEvent(worldState, `${player.name} moves fast, cuts off the thief, and recovers the stolen purse.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} cuts off the thief before they reach the door and recovers the stolen purse.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
       if (check.tier === "mixed") {
         updateReputation(player, { honor: 1 });
         worldState.locationStates.bar.stateFlags.thiefActive = false;
-        addWorldEvent(worldState, `${player.name} clips the thief, but not enough to stop them. Coins scatter across the floor as the chase spills outside.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
-        worldState.locationStates.street.activeEvent = createEventTemplate("street_guard_stop", "street");
-        addWorldEvent(worldState, `[CHAIN EVENT — STREET] A disturbance from the bar spills into the street.`, "street");
+        addWorldEvent(
+          worldState,
+          `${player.name} almost catches the thief, but the chase spills into the street.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
       updateReputation(player, { chaos: 1 });
       worldState.locationStates.bar.stateFlags.thiefActive = false;
-      addWorldEvent(worldState, `${player.name} lunges too late. The thief vanishes through the door with the purse.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} lunges too late. The thief bursts outside into the street.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
     if (reaction.intent === "talk" || reaction.intent === "threaten") {
-      const check = resolveCheck({ bonus: player.stats.presence + 1, dc: 14 });
+      const bonus = reaction.intent === "talk" ? player.stats.presence : player.stats.presence + 1;
+      const check = resolveCheck({ bonus, dc: 14 });
 
       if (check.tier === "great") {
         updateReputation(player, { intimidation: 2 });
         worldState.locationStates.bar.stateFlags.thiefActive = false;
-        addWorldEvent(worldState, `${player.name}'s voice cuts through the room. The thief freezes just long enough to get caught.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name}'s voice freezes the thief for one fatal second. The purse is recovered.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
-      addWorldEvent(worldState, `${player.name} shouts after the thief, but momentum wins over words.`, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} shouts after the thief, but momentum wins. The chase spills outside.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "mixed");
       return true;
     }
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       worldState.locationStates.bar.stateFlags.thiefActive = false;
       updateReputation(player, { honor: -1 });
-      addWorldEvent(worldState, `${player.name} lets the moment pass. The thief gets away.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} lets the moment pass. The thief escapes into the street.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
       return true;
     }
 
@@ -1115,6 +1409,9 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     return true;
   }
 
+  // =========================
+  // BAR: FIRE
+  // =========================
   if (eventObj.id === "bar_fire") {
     if (reaction.intent === "help" || reaction.intent === "defend") {
       const check = resolveCheck({ bonus: player.stats.defense + 1, dc: 12 });
@@ -1122,8 +1419,12 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       if (check.tier === "great" || check.tier === "success") {
         updateReputation(player, { honor: 2 });
         worldState.locationStates.bar.stateFlags.barOnFire = false;
-        addWorldEvent(worldState, `${player.name} beats back the flames before they can spread.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} beats down the first flames before they can spread.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
@@ -1131,25 +1432,35 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         const damage = 5;
         player.hp = Math.max(0, player.hp - damage);
         worldState.locationStates.bar.stateFlags.barDamaged = true;
-        worldState.locationStates.bar.stateFlags.barOnFire = false;
-        addWorldEvent(worldState, `${player.name} contains most of the fire, but not before taking ${damage} damage from heat and splintering wood.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} slows the flames, but takes ${damage} damage as the fire spreads farther into the room.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
       const damage = 8;
       player.hp = Math.max(0, player.hp - damage);
       worldState.locationStates.bar.stateFlags.barDamaged = true;
-      addWorldEvent(worldState, `${player.name} rushes the flames and gets burned for ${damage} damage. The fire chews through more of the room.`, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} rushes the flames and gets burned for ${damage} damage. The fire spreads.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       worldState.locationStates.bar.stateFlags.barDamaged = true;
-      worldState.locationStates.bar.stateFlags.barOnFire = false;
-      updateReputation(player, { honor: -1 });
-      addWorldEvent(worldState, `${player.name} backs away as the bar takes the damage.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} backs away as the first flames spread across the bar.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
       return true;
     }
 
@@ -1157,6 +1468,160 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     return true;
   }
 
+  if (eventObj.id === "bar_fire_spreading") {
+    if (reaction.intent === "help" || reaction.intent === "defend") {
+      const check = resolveCheck({ bonus: player.stats.defense + 1, dc: 14 });
+
+      if (check.tier === "great" || check.tier === "success") {
+        updateReputation(player, { honor: 2 });
+        worldState.locationStates.bar.stateFlags.barOnFire = false;
+        worldState.locationStates.bar.stateFlags.barDamaged = true;
+        addWorldEvent(
+          worldState,
+          `${player.name} finally gets the spreading fire under control, but the bar is left blackened and damaged.`,
+          locationKey
+        );
+        closeActiveEvent(worldState, locationKey);
+        return true;
+      }
+
+      worldState.locationStates.bar.stateFlags.barOnFire = false;
+      worldState.locationStates.bar.stateFlags.barDamaged = true;
+      addWorldEvent(
+        worldState,
+        `${player.name} cannot stop the damage in time. The flames are put out eventually, but the bar is left badly damaged.`,
+        locationKey
+      );
+      closeActiveEvent(worldState, locationKey);
+      return true;
+    }
+
+    worldState.locationStates.bar.stateFlags.barOnFire = false;
+    worldState.locationStates.bar.stateFlags.barDamaged = true;
+    addWorldEvent(
+      worldState,
+      `${player.name} fails to act while the fire spreads. The bar survives, but only barely.`,
+      locationKey
+    );
+    closeActiveEvent(worldState, locationKey);
+    return true;
+  }
+
+  // =========================
+  // STREET: GUARD RESPONSE
+  // =========================
+  if (eventObj.id === "street_guard_response") {
+    if (reaction.intent === "talk") {
+      const check = resolveCheck({
+        bonus: player.stats.presence + Math.floor(player.reputation.honor / 5),
+        dc: 13
+      });
+
+      if (check.tier === "great" || check.tier === "success") {
+        updateReputation(player, { honor: 1 });
+        addWorldEvent(
+          worldState,
+          `${player.name} explains the situation well enough that the guards calm down and focus on restoring order.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
+        return true;
+      }
+
+      if (check.tier === "mixed") {
+        worldState.locationStates.street.stateFlags.guardsAlert = true;
+        addWorldEvent(
+          worldState,
+          `${player.name} only half-convinces the guards. They tighten their grip on the street.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
+        return true;
+      }
+
+      worldState.locationStates.street.stateFlags.guardsAlert = true;
+      addWorldEvent(
+        worldState,
+        `${player.name}'s explanation falls apart. The guards move into crackdown mode.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
+      return true;
+    }
+
+    if (reaction.intent === "threaten" || reaction.intent === "attack") {
+      updateReputation(player, { chaos: 2, intimidation: 2 });
+      worldState.locationStates.street.stateFlags.guardsAlert = true;
+      addWorldEvent(
+        worldState,
+        `${player.name} meets the guards with hostility. The whole street locks down.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
+      return true;
+    }
+
+    addWorldEvent(worldState, `${player.name} hesitates while the guards take control of the scene.`, locationKey);
+    advanceEventChain(worldState, locationKey, eventObj, "ignore");
+    return true;
+  }
+
+  // =========================
+  // STREET: CHASE
+  // =========================
+  if (eventObj.id === "street_chase") {
+    if (reaction.intent === "attack" || reaction.intent === "help") {
+      const check = resolveCheck({ bonus: player.stats.dexterity + 1, dc: 13 });
+
+      if (check.tier === "great" || check.tier === "success") {
+        updateReputation(player, { honor: 2 });
+        addWorldEvent(
+          worldState,
+          `${player.name} catches the thief in the street and ends the chase.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
+        return true;
+      }
+
+      if (check.tier === "mixed") {
+        updateReputation(player, { honor: 1 });
+        addWorldEvent(
+          worldState,
+          `${player.name} nearly stops the thief, but the commotion draws guard attention.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
+        return true;
+      }
+
+      updateReputation(player, { chaos: 1 });
+      addWorldEvent(
+        worldState,
+        `${player.name} loses the thief in the chaos. A guard steps in to question what happened.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
+      return true;
+    }
+
+    if (reaction.intent === "observe" || reaction.intent === "flee") {
+      addWorldEvent(
+        worldState,
+        `${player.name} watches the thief vanish into the street traffic. Guards move in afterward.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
+      return true;
+    }
+
+    addWorldEvent(worldState, `${player.name} hesitates while the chase slips away.`, locationKey);
+    return true;
+  }
+
+  // =========================
+  // STREET: CART
+  // =========================
   if (eventObj.id === "street_cart") {
     if (reaction.intent === "help" || reaction.intent === "defend" || reaction.intent === "attack") {
       const check = resolveCheck({ bonus: player.stats.strength + 1, dc: 13 });
@@ -1164,8 +1629,12 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       if (check.tier === "great" || check.tier === "success") {
         updateReputation(player, { honor: 2 });
         worldState.locationStates.street.stateFlags.cartCrashed = false;
-        addWorldEvent(worldState, `${player.name} gets hold of the cart and drags it off line before it kills someone.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} gets hold of the runaway cart and drags it off line before it kills someone.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
@@ -1173,24 +1642,44 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         const damage = 6;
         player.hp = Math.max(0, player.hp - damage);
         updateReputation(player, { honor: 1 });
-        worldState.locationStates.street.stateFlags.cartCrashed = true;
-        addWorldEvent(worldState, `${player.name} slows the cart, saving people at the cost of ${damage} damage.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} slows the cart, but not before taking ${damage} damage and leaving wreckage across the street.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
       worldState.locationStates.street.stateFlags.cartCrashed = true;
-      addWorldEvent(worldState, `${player.name} fails to stop the cart. It crashes through the street.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} fails to stop the cart. It crashes and litters the street with debris.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
+    addWorldEvent(worldState, `${player.name} watches the cart thunder by toward disaster.`, locationKey);
+    advanceEventChain(worldState, locationKey, eventObj, "ignore");
+    return true;
+  }
+
+  if (eventObj.id === "street_debris") {
     worldState.locationStates.street.stateFlags.cartCrashed = true;
-    addWorldEvent(worldState, `${player.name} watches the cart thunder by.`, locationKey);
+    addWorldEvent(
+      worldState,
+      `${player.name} stands among the aftermath as townsfolk try to clear the wreckage.`,
+      locationKey
+    );
     closeActiveEvent(worldState, locationKey);
     return true;
   }
 
+  // =========================
+  // STREET: GUARD STOP / CRACKDOWN
+  // =========================
   if (eventObj.id === "street_guard_stop") {
     if (reaction.intent === "talk") {
       const check = resolveCheck({
@@ -1200,36 +1689,67 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "great" || check.tier === "success") {
         updateReputation(player, { honor: 1 });
-        addWorldEvent(worldState, `${player.name} answers calmly. The guard nods and steps aside.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} answers calmly. The guard nods and steps aside.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
       if (check.tier === "mixed") {
         worldState.locationStates.street.stateFlags.guardsAlert = true;
-        addWorldEvent(worldState, `${player.name} talks their way through part of it, but the guard remains suspicious.`, locationKey);
-        closeActiveEvent(worldState, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} gets through part of the questioning, but the guard remains suspicious.`,
+          locationKey
+        );
+        advanceEventChain(worldState, locationKey, eventObj, "mixed");
         return true;
       }
 
       worldState.locationStates.street.stateFlags.guardsAlert = true;
-      addWorldEvent(worldState, `${player.name}'s answers only make things worse. The guard keeps a close eye on the street now.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name}'s answers only make things worse. The street grows tense.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
     if (reaction.intent === "threaten" || reaction.intent === "attack") {
       updateReputation(player, { chaos: 2, intimidation: 2 });
       worldState.locationStates.street.stateFlags.guardsAlert = true;
-      addWorldEvent(worldState, `${player.name} escalates things with the guard. The town will remember that.`, locationKey);
-      closeActiveEvent(worldState, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} escalates things with the guard. The street shifts toward crackdown.`,
+        locationKey
+      );
+      advanceEventChain(worldState, locationKey, eventObj, "fail");
       return true;
     }
 
     addWorldEvent(worldState, `${player.name} stalls while the guard studies them.`, locationKey);
+    advanceEventChain(worldState, locationKey, eventObj, "ignore");
     return true;
   }
 
+  if (eventObj.id === "street_crackdown") {
+    worldState.locationStates.street.stateFlags.guardsAlert = true;
+    addWorldEvent(
+      worldState,
+      `${player.name} feels the pressure of the crackdown as guards watch every movement on the street.`,
+      locationKey
+    );
+    closeActiveEvent(worldState, locationKey);
+    return true;
+  }
+
+  // =========================
+  // FOREST: HUNTER
+  // =========================
   if (eventObj.id === "forest_hunter") {
     if (reaction.intent === "help") {
       const check = resolveCheck({ bonus: player.stats.presence + player.stats.defense, dc: 11 });
@@ -1240,14 +1760,22 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
           player.inventory.push("Health Potion");
         }
         worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
-        addWorldEvent(worldState, `${player.name} helps the wounded hunter to safety. Before leaving, the hunter presses a Health Potion into ${player.name}'s hand.`, locationKey);
+        addWorldEvent(
+          worldState,
+          `${player.name} helps the wounded hunter to safety. Before leaving, the hunter presses a Health Potion into ${player.name}'s hand.`,
+          locationKey
+        );
         closeActiveEvent(worldState, locationKey);
         return true;
       }
 
       updateReputation(player, { honor: 1 });
       worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
-      addWorldEvent(worldState, `${player.name} tries to help, but the hunter is in worse shape than expected. Still, the effort matters.`, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} tries to help, but the hunter is in worse shape than expected. Still, the effort matters.`,
+        locationKey
+      );
       closeActiveEvent(worldState, locationKey);
       return true;
     }
@@ -1255,7 +1783,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       updateReputation(player, { honor: -1 });
       worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
-      addWorldEvent(worldState, `${player.name} leaves the wounded hunter behind.`, locationKey);
+      addWorldEvent(
+        worldState,
+        `${player.name} leaves the wounded hunter behind.`,
+        locationKey
+      );
       closeActiveEvent(worldState, locationKey);
       return true;
     }
