@@ -95,9 +95,12 @@ function createNewWorldState() {
     locationStates: {
       village: {
         ...createBaseLocationState(),
-        npcs: ["Old Villager", "Worried Farmer"],
+        npcs: ["Old Villager", "Worried Farmer", "Passing Guard"],
         stateFlags: {
-          crowdUneasy: false
+          crowdUneasy: false,
+          hunterSavedRumor: false,
+          hunterAbandonedRumor: false,
+          tavernTroubleRumor: false
         }
       },
       bar: {
@@ -122,13 +125,18 @@ function createNewWorldState() {
         ...createBaseLocationState(),
         npcs: ["Goblin"],
         stateFlags: {
-          woundedHunterPresent: false
+          woundedHunterPresent: false,
+          goblinReinforcementsIncoming: false,
+          forestDanger: 0
         }
       }
     },
     globalState: {
       villagersOnEdge: false,
-      recentViolence: 0
+      recentViolence: 0,
+      guardsAlertLevel: 0,
+      hunterSavedBy: null,
+      hunterAbandonedBy: null
     }
   };
 }
@@ -164,12 +172,15 @@ function ensureWorldShape(worldState) {
   const street = worldState.locationStates.street;
   const forest = worldState.locationStates.forest;
 
-  if (village.npcs.length === 0) village.npcs = ["Old Villager", "Worried Farmer"];
+  if (village.npcs.length === 0) village.npcs = ["Old Villager", "Worried Farmer", "Passing Guard"];
   if (bar.npcs.length === 0) bar.npcs = ["Bartender Rowan", "Drunk Patron", "Traveling Merchant", "Hooded Stranger"];
   if (street.npcs.length === 0) street.npcs = ["Town Guard", "Cart Driver", "Beggar"];
   if (forest.npcs.length === 0) forest.npcs = ["Goblin"];
 
   if (village.stateFlags.crowdUneasy === undefined) village.stateFlags.crowdUneasy = false;
+  if (village.stateFlags.hunterSavedRumor === undefined) village.stateFlags.hunterSavedRumor = false;
+  if (village.stateFlags.hunterAbandonedRumor === undefined) village.stateFlags.hunterAbandonedRumor = false;
+  if (village.stateFlags.tavernTroubleRumor === undefined) village.stateFlags.tavernTroubleRumor = false;
 
   if (bar.stateFlags.barDamaged === undefined) bar.stateFlags.barDamaged = false;
   if (bar.stateFlags.barOnFire === undefined) bar.stateFlags.barOnFire = false;
@@ -180,13 +191,18 @@ function ensureWorldShape(worldState) {
   if (street.stateFlags.guardsAlert === undefined) street.stateFlags.guardsAlert = false;
 
   if (forest.stateFlags.woundedHunterPresent === undefined) forest.stateFlags.woundedHunterPresent = false;
+  if (forest.stateFlags.goblinReinforcementsIncoming === undefined) forest.stateFlags.goblinReinforcementsIncoming = false;
+  if (forest.stateFlags.forestDanger === undefined) forest.stateFlags.forestDanger = 0;
 
   if (!worldState.globalState) {
-    worldState.globalState = {
-      villagersOnEdge: false,
-      recentViolence: 0
-    };
+    worldState.globalState = {};
   }
+
+  if (worldState.globalState.villagersOnEdge === undefined) worldState.globalState.villagersOnEdge = false;
+  if (worldState.globalState.recentViolence === undefined) worldState.globalState.recentViolence = 0;
+  if (worldState.globalState.guardsAlertLevel === undefined) worldState.globalState.guardsAlertLevel = 0;
+  if (worldState.globalState.hunterSavedBy === undefined) worldState.globalState.hunterSavedBy = null;
+  if (worldState.globalState.hunterAbandonedBy === undefined) worldState.globalState.hunterAbandonedBy = null;
 
   return worldState;
 }
@@ -840,8 +856,27 @@ function createEventTemplate(eventId, location, data = {}) {
     },
 
     // =========================
-    // EXISTING FOREST EVENT
+    // FOREST CHAINS
     // =========================
+
+    forest_horn_signal: {
+      id: "forest_horn_signal",
+      name: "Horn Signal",
+      chainId: "goblin_pressure",
+      phase: 2,
+      location,
+      phaseLabel: "signal",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A distant horn answers from deeper in the forest. Something heard the goblin's last call.",
+      involvedNpc: ["Distant Goblins"],
+      tags: ["forest", "danger"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+      
+    },
 
     forest_hunter: {
       id: "forest_hunter",
@@ -855,6 +890,118 @@ function createEventTemplate(eventId, location, data = {}) {
       text: "Behind a fallen log, a wounded hunter calls weakly for help.",
       involvedNpc: ["Wounded Hunter"],
       tags: ["forest", "aid"],
+      nextOnSuccess: { eventId: "village_hunter_praise", location: "village" },
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: { eventId: "village_hunter_grumble", location: "village" }
+    },
+
+    // =========================
+    // VILLAGE CONSEQUENCES
+    // =========================
+
+    village_hunter_praise: {
+      id: "village_hunter_praise",
+      name: "Hunter Praise",
+      chainId: "hunter_chain",
+      phase: 2,
+      location,
+      phaseLabel: "rumor",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "Word reaches the village that someone brought a wounded hunter back alive. People are talking.",
+      involvedNpc: ["Old Villager", "Worried Farmer"],
+      tags: ["village", "rumor", "honor"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    village_hunter_grumble: {
+      id: "village_hunter_grumble",
+      name: "Hunter Grumble",
+      chainId: "hunter_chain",
+      phase: 2,
+      location,
+      phaseLabel: "rumor",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A bitter rumor spreads through the village: someone left a wounded hunter in the forest.",
+      involvedNpc: ["Old Villager", "Passing Guard"],
+      tags: ["village", "rumor", "dishonor"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    village_guard_murmur: {
+      id: "village_guard_murmur",
+      name: "Guard Murmur",
+      chainId: "village_consequence",
+      phase: 1,
+      location,
+      phaseLabel: "murmur",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
+      involvedNpc: ["Old Villager", "Passing Guard"],
+      tags: ["village", "guard", "rumor"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    village_honor_scene: {
+      id: "village_honor_scene",
+      name: "Village Respect",
+      chainId: "village_consequence",
+      phase: 1,
+      location,
+      phaseLabel: "respect",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A villager recognizes you and gives a small nod of respect. Your actions are starting to travel faster than you do.",
+      involvedNpc: ["Old Villager"],
+      tags: ["village", "honor"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    village_chaos_scene: {
+      id: "village_chaos_scene",
+      name: "Village Unease",
+      chainId: "village_consequence",
+      phase: 1,
+      location,
+      phaseLabel: "fear",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "A hush passes through the village as people notice you. No one wants to be close if trouble starts.",
+      involvedNpc: ["Old Villager", "Worried Farmer"],
+      tags: ["village", "chaos"],
+      nextOnSuccess: null,
+      nextOnMixed: null,
+      nextOnFail: null,
+      nextOnIgnore: null
+    },
+
+    village_tavern_gossip: {
+      id: "village_tavern_gossip",
+      name: "Tavern Gossip",
+      chainId: "village_consequence",
+      phase: 1,
+      location,
+      phaseLabel: "gossip",
+      createdAt: now,
+      expiresInMs: 10 * 60 * 1000,
+      text: "The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+      involvedNpc: ["Old Villager", "Worried Farmer"],
+      tags: ["village", "gossip"],
       nextOnSuccess: null,
       nextOnMixed: null,
       nextOnFail: null,
@@ -967,6 +1114,21 @@ function advanceEventChain(worldState, currentLocationKey, currentEvent, outcome
 
   return nextEvent;
 }
+function clearVillageRumorFlagForEvent(worldState, eventId) {
+  const villageFlags = worldState.locationStates.village.stateFlags;
+
+  if (eventId === "village_hunter_praise") {
+    villageFlags.hunterSavedRumor = false;
+  }
+
+  if (eventId === "village_hunter_grumble") {
+    villageFlags.hunterAbandonedRumor = false;
+  }
+
+  if (eventId === "village_tavern_gossip") {
+    villageFlags.tavernTroubleRumor = false;
+  }
+}
 function getLocationEventPool(locationKey, worldState, player) {
   if (locationKey === "bar") {
     const pool = ["bar_drunk_accusation", "bar_thief"];
@@ -981,13 +1143,38 @@ function getLocationEventPool(locationKey, worldState, player) {
   }
 
   if (locationKey === "forest") {
+    const pool = [];
+
     if (!worldState.goblinAlive) {
-      return ["forest_hunter"];
+      pool.push("forest_hunter");
     }
+
+    if (worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming) {
+      pool.push("forest_horn_signal");
+    }
+
+    return pool;
+  }
+
+  if (locationKey === "village") {
+    const pool = [];
+    const villageFlags = worldState.locationStates.village.stateFlags;
+
+    if (villageFlags.hunterSavedRumor) pool.push("village_hunter_praise");
+    if (villageFlags.hunterAbandonedRumor) pool.push("village_hunter_grumble");
+    if (villageFlags.tavernTroubleRumor) pool.push("village_tavern_gossip");
+    if (worldState.locationStates.street.stateFlags.guardsAlert || worldState.globalState.guardsAlertLevel > 0) {
+      pool.push("village_guard_murmur");
+    }
+    if (player.reputation.honor >= 8) pool.push("village_honor_scene");
+    if (player.reputation.chaos >= 8) pool.push("village_chaos_scene");
+
+    return pool;
   }
 
   return [];
 }
+
 function maybeTriggerLocationEvent(worldState, locationKey, player, reason = "ambient") {
   const locState = worldState.locationStates[locationKey];
   if (!locState) return null;
@@ -1220,6 +1407,7 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
   // =========================
   // BAR: BRAWL
   // =========================
+  
   if (eventObj.id === "bar_brawl") {
     if (reaction.intent === "talk") {
       const check = resolveCheck({
@@ -1242,6 +1430,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         const damage = 4;
         player.hp = Math.max(0, player.hp - damage);
         worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+        // tavern trouble now becomes village gossip
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         updateReputation(player, { honor: 1 });
         addWorldEvent(
           worldState,
@@ -1253,6 +1445,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       }
 
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble now becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       updateReputation(player, { chaos: 1 });
       addWorldEvent(
         worldState,
@@ -1275,6 +1471,9 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "great" || check.tier === "success") {
         worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+        // tavern trouble now becomes village gossip
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
 
         if (reaction.intent === "attack") {
           updateReputation(player, { intimidation: 2, chaos: 1 });
@@ -1299,6 +1498,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       const damage = 6;
       player.hp = Math.max(0, player.hp - damage);
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble now becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       updateReputation(player, { chaos: 1, intimidation: 1 });
       addWorldEvent(
         worldState,
@@ -1311,6 +1514,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble now becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       updateReputation(player, { honor: -1 });
       addWorldEvent(
         worldState,
@@ -1348,6 +1555,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       if (check.tier === "mixed") {
         updateReputation(player, { honor: 1 });
         worldState.locationStates.bar.stateFlags.thiefActive = false;
+
+        // tavern trouble becomes village gossip
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         addWorldEvent(
           worldState,
           `${player.name} almost catches the thief, but the chase spills into the street.`,
@@ -1359,6 +1570,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       updateReputation(player, { chaos: 1 });
       worldState.locationStates.bar.stateFlags.thiefActive = false;
+
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} lunges too late. The thief bursts outside into the street.`,
@@ -1384,6 +1599,9 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         return true;
       }
 
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} shouts after the thief, but momentum wins. The chase spills outside.`,
@@ -1395,6 +1613,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       worldState.locationStates.bar.stateFlags.thiefActive = false;
+
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       updateReputation(player, { honor: -1 });
       addWorldEvent(
         worldState,
@@ -1412,6 +1634,7 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
   // =========================
   // BAR: FIRE
   // =========================
+  
   if (eventObj.id === "bar_fire") {
     if (reaction.intent === "help" || reaction.intent === "defend") {
       const check = resolveCheck({ bonus: player.stats.defense + 1, dc: 12 });
@@ -1432,6 +1655,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         const damage = 5;
         player.hp = Math.max(0, player.hp - damage);
         worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+        // tavern trouble becomes village gossip
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         addWorldEvent(
           worldState,
           `${player.name} slows the flames, but takes ${damage} damage as the fire spreads farther into the room.`,
@@ -1444,6 +1671,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       const damage = 8;
       player.hp = Math.max(0, player.hp - damage);
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} rushes the flames and gets burned for ${damage} damage. The fire spreads.`,
@@ -1455,6 +1686,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} backs away as the first flames spread across the bar.`,
@@ -1476,6 +1711,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         updateReputation(player, { honor: 2 });
         worldState.locationStates.bar.stateFlags.barOnFire = false;
         worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+        // tavern trouble becomes village gossip
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         addWorldEvent(
           worldState,
           `${player.name} finally gets the spreading fire under control, but the bar is left blackened and damaged.`,
@@ -1487,6 +1726,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       worldState.locationStates.bar.stateFlags.barOnFire = false;
       worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+      // tavern trouble becomes village gossip
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} cannot stop the damage in time. The flames are put out eventually, but the bar is left badly damaged.`,
@@ -1498,6 +1741,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
     worldState.locationStates.bar.stateFlags.barOnFire = false;
     worldState.locationStates.bar.stateFlags.barDamaged = true;
+
+    // tavern trouble becomes village gossip
+    worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
     addWorldEvent(
       worldState,
       `${player.name} fails to act while the fire spreads. The bar survives, but only barely.`,
@@ -1506,8 +1753,7 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     closeActiveEvent(worldState, locationKey);
     return true;
   }
-
-  // =========================
+    // =========================
   // STREET: GUARD RESPONSE
   // =========================
   if (eventObj.id === "street_guard_response") {
@@ -1530,6 +1776,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "mixed") {
         worldState.locationStates.street.stateFlags.guardsAlert = true;
+        worldState.globalState.guardsAlertLevel += 1;
+
+        // tavern trouble is now known in the village
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         addWorldEvent(
           worldState,
           `${player.name} only half-convinces the guards. They tighten their grip on the street.`,
@@ -1540,6 +1791,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       }
 
       worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+
+      // tavern trouble is now known in the village
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name}'s explanation falls apart. The guards move into crackdown mode.`,
@@ -1552,6 +1808,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     if (reaction.intent === "threaten" || reaction.intent === "attack") {
       updateReputation(player, { chaos: 2, intimidation: 2 });
       worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+
+      // tavern trouble is now known in the village
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} meets the guards with hostility. The whole street locks down.`,
@@ -1561,12 +1822,18 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       return true;
     }
 
+    worldState.locationStates.street.stateFlags.guardsAlert = true;
+    worldState.globalState.guardsAlertLevel += 1;
+
+    // tavern trouble is now known in the village
+    worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
     addWorldEvent(worldState, `${player.name} hesitates while the guards take control of the scene.`, locationKey);
     advanceEventChain(worldState, locationKey, eventObj, "ignore");
     return true;
   }
 
-  // =========================
+    // =========================
   // STREET: CHASE
   // =========================
   if (eventObj.id === "street_chase") {
@@ -1586,6 +1853,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "mixed") {
         updateReputation(player, { honor: 1 });
+
+        worldState.locationStates.street.stateFlags.guardsAlert = true;
+        worldState.globalState.guardsAlertLevel += 1;
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
         addWorldEvent(
           worldState,
           `${player.name} nearly stops the thief, but the commotion draws guard attention.`,
@@ -1596,6 +1868,11 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       }
 
       updateReputation(player, { chaos: 1 });
+
+      worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} loses the thief in the chaos. A guard steps in to question what happened.`,
@@ -1606,6 +1883,10 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     }
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
+      worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+
       addWorldEvent(
         worldState,
         `${player.name} watches the thief vanish into the street traffic. Guards move in afterward.`,
@@ -1619,7 +1900,7 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     return true;
   }
 
-  // =========================
+   // =========================
   // STREET: CART
   // =========================
   if (eventObj.id === "street_cart") {
@@ -1642,6 +1923,9 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         const damage = 6;
         player.hp = Math.max(0, player.hp - damage);
         updateReputation(player, { honor: 1 });
+
+        worldState.locationStates.street.stateFlags.cartCrashed = true;
+
         addWorldEvent(
           worldState,
           `${player.name} slows the cart, but not before taking ${damage} damage and leaving wreckage across the street.`,
@@ -1661,12 +1945,13 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       return true;
     }
 
+    worldState.locationStates.street.stateFlags.cartCrashed = true;
     addWorldEvent(worldState, `${player.name} watches the cart thunder by toward disaster.`, locationKey);
     advanceEventChain(worldState, locationKey, eventObj, "ignore");
     return true;
   }
 
-  if (eventObj.id === "street_debris") {
+   if (eventObj.id === "street_debris") {
     worldState.locationStates.street.stateFlags.cartCrashed = true;
     addWorldEvent(
       worldState,
@@ -1677,7 +1962,7 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     return true;
   }
 
-  // =========================
+    // =========================
   // STREET: GUARD STOP / CRACKDOWN
   // =========================
   if (eventObj.id === "street_guard_stop") {
@@ -1700,6 +1985,8 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
 
       if (check.tier === "mixed") {
         worldState.locationStates.street.stateFlags.guardsAlert = true;
+        worldState.globalState.guardsAlertLevel += 1;
+
         addWorldEvent(
           worldState,
           `${player.name} gets through part of the questioning, but the guard remains suspicious.`,
@@ -1710,6 +1997,8 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       }
 
       worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+
       addWorldEvent(
         worldState,
         `${player.name}'s answers only make things worse. The street grows tense.`,
@@ -1722,6 +2011,8 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
     if (reaction.intent === "threaten" || reaction.intent === "attack") {
       updateReputation(player, { chaos: 2, intimidation: 2 });
       worldState.locationStates.street.stateFlags.guardsAlert = true;
+      worldState.globalState.guardsAlertLevel += 1;
+
       addWorldEvent(
         worldState,
         `${player.name} escalates things with the guard. The street shifts toward crackdown.`,
@@ -1731,22 +2022,50 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
       return true;
     }
 
+    worldState.locationStates.street.stateFlags.guardsAlert = true;
+    worldState.globalState.guardsAlertLevel += 1;
+
     addWorldEvent(worldState, `${player.name} stalls while the guard studies them.`, locationKey);
     advanceEventChain(worldState, locationKey, eventObj, "ignore");
     return true;
   }
 
-  if (eventObj.id === "street_crackdown") {
+    if (eventObj.id === "street_crackdown") {
     worldState.locationStates.street.stateFlags.guardsAlert = true;
+    worldState.globalState.guardsAlertLevel += 1;
+
     addWorldEvent(
       worldState,
       `${player.name} feels the pressure of the crackdown as guards watch every movement on the street.`,
       locationKey
     );
+        if (worldState.globalState.guardsAlertLevel > 0) {
+      worldState.globalState.guardsAlertLevel -= 1;
+    }
     closeActiveEvent(worldState, locationKey);
     return true;
   }
 
+    // =========================
+  // FOREST: HORN SIGNAL
+  // =========================
+   if (eventObj.id === "forest_horn_signal") {
+    worldState.locationStates.forest.stateFlags.forestDanger += 1;
+
+    // cleanup: prevent this event from looping forever
+    worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming = false;
+
+    worldState.globalState.recentViolence += 1;
+
+    addWorldEvent(
+      worldState,
+      `${player.name} hears the distant horn answer. The forest feels less empty now, and more hostile.`,
+      locationKey
+    );
+
+    closeActiveEvent(worldState, locationKey);
+    return true;
+  }
   // =========================
   // FOREST: HUNTER
   // =========================
@@ -1759,40 +2078,79 @@ function handleActiveEventReaction(player, worldState, rawAction, reaction) {
         if (!player.inventory.includes("Health Potion")) {
           player.inventory.push("Health Potion");
         }
+
         worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
+        worldState.locationStates.village.stateFlags.hunterSavedRumor = true;
+        worldState.locationStates.village.stateFlags.hunterAbandonedRumor = false;
+        worldState.globalState.hunterSavedBy = player.name;
+
         addWorldEvent(
           worldState,
           `${player.name} helps the wounded hunter to safety. Before leaving, the hunter presses a Health Potion into ${player.name}'s hand.`,
           locationKey
         );
-        closeActiveEvent(worldState, locationKey);
+
+        advanceEventChain(worldState, locationKey, eventObj, "success");
         return true;
       }
 
       updateReputation(player, { honor: 1 });
       worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
+      worldState.locationStates.village.stateFlags.hunterSavedRumor = true;
+      worldState.globalState.hunterSavedBy = player.name;
+
       addWorldEvent(
         worldState,
-        `${player.name} tries to help, but the hunter is in worse shape than expected. Still, the effort matters.`,
+        `${player.name} struggles to help the hunter properly, but the effort still matters and word will likely spread.`,
         locationKey
       );
-      closeActiveEvent(worldState, locationKey);
+
+      advanceEventChain(worldState, locationKey, eventObj, "success");
       return true;
     }
 
     if (reaction.intent === "observe" || reaction.intent === "flee") {
       updateReputation(player, { honor: -1 });
       worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
+      worldState.locationStates.village.stateFlags.hunterAbandonedRumor = true;
+      worldState.locationStates.village.stateFlags.hunterSavedRumor = false;
+      worldState.globalState.hunterAbandonedBy = player.name;
+
       addWorldEvent(
         worldState,
         `${player.name} leaves the wounded hunter behind.`,
         locationKey
       );
-      closeActiveEvent(worldState, locationKey);
+
+      advanceEventChain(worldState, locationKey, eventObj, "ignore");
       return true;
     }
 
     addWorldEvent(worldState, `${player.name} hesitates while the hunter bleeds into the leaves.`, locationKey);
+    return true;
+  }
+
+  // =========================
+  // VILLAGE CONSEQUENCE EVENTS
+  // =========================
+   if (
+    eventObj.id === "village_hunter_praise" ||
+    eventObj.id === "village_hunter_grumble" ||
+    eventObj.id === "village_guard_murmur" ||
+    eventObj.id === "village_honor_scene" ||
+    eventObj.id === "village_chaos_scene" ||
+    eventObj.id === "village_tavern_gossip"
+  ) {
+    addWorldEvent(
+      worldState,
+      `${player.name} takes in the village mood: ${eventObj.text}`,
+      locationKey
+    );
+
+    // cleanup: rumor-style events should usually fire once, not forever
+    clearVillageRumorFlagForEvent(worldState, eventObj.id);
+
+    closeActiveEvent(worldState, locationKey);
     return true;
   }
 
@@ -2148,7 +2506,7 @@ TRY
     return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
   }
 
-  if (interpreted.type === "attack") {
+   if (interpreted.type === "attack") {
     if (player.location !== "forest" || !worldState.goblinAlive) {
       const resultText = buildResultBlock(
         [
@@ -2181,6 +2539,11 @@ TRY
 
           addWorldEvent(worldState, `${player.name} kills the goblin.`, player.location);
           addWorldEvent(worldState, `${player.name} stands over the fallen goblin.\nIntimidation +2.`, player.location);
+          addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.", player.location);
+
+          worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming = true;
+          worldState.locationStates.forest.stateFlags.forestDanger += 1;
+          worldState.globalState.recentViolence += 1;
 
           const reactionText = getReputationReaction(player.reputation);
           const resultText = buildResultBlock(
@@ -2189,13 +2552,16 @@ TRY
               "Outcome: Kill",
               `Damage: ${damage}`,
               `Goblin Corpses: ${worldState.goblinCorpses}`,
+              "Threat: A distant answer may come from deeper forest",
               `Reputation: ${player.reputation.title}`,
               reactionText ? `World: ${reactionText}` : null
             ].filter(Boolean),
-            getAttackFlavor("kill")
+            "You won the fight decisively, but the forest may not be finished with you."
           );
 
           addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
+
+          worldState.goblinHp = 0;
         } else {
           const reactionText = getReputationReaction(player.reputation);
           const resultText = buildResultBlock(
@@ -2245,7 +2611,10 @@ TRY
           addWorldEvent(worldState, `${player.name} kills the goblin.`, player.location);
           addWorldEvent(worldState, `${player.name} stands over the fallen goblin.\nIntimidation +2.`, player.location);
           addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.", player.location);
-          addWorldEvent(worldState, "Another goblin rushes in!", player.location);
+
+          worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming = true;
+          worldState.locationStates.forest.stateFlags.forestDanger += 1;
+          worldState.globalState.recentViolence += 1;
 
           const reactionText = getReputationReaction(player.reputation);
           const resultText = buildResultBlock(
@@ -2254,17 +2623,16 @@ TRY
               "Outcome: Kill",
               `Damage: ${damage}`,
               `Goblin Corpses: ${worldState.goblinCorpses}`,
-              "Threat: Reinforcements arrived",
+              "Threat: A distant answer may come from deeper forest",
               `Reputation: ${player.reputation.title}`,
               reactionText ? `World: ${reactionText}` : null
             ].filter(Boolean),
-            "You solved one problem loudly enough to create another."
+            "You won the fight, but the forest may not be finished with you."
           );
 
           addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
 
-          worldState.goblinAlive = true;
-          worldState.goblinHp = 40;
+          worldState.goblinHp = 0;
         } else {
           const reactionText = getReputationReaction(player.reputation);
           const resultText = buildResultBlock(
@@ -2321,6 +2689,7 @@ TRY
         addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
       }
     }
+  
   } else if (interpreted.type === "defend") {
     if (player.location !== "forest" || !worldState.goblinAlive) {
       addWorldEvent(worldState, `${player.name} tries to defend, but nothing threatens them.`, player.location);
