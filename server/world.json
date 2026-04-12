@@ -1,9 +1,76 @@
 {
   "goblinAlive": true,
-  "goblinHp": 28,
+  "goblinHp": 40,
   "goblinCorpses": 0,
   "forestPotionFound": false,
   "eventLog": [
     "The world begins. The village waits in silence."
-  ]
+  ],
+  "locationStates": {
+    "village": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [
+        "Old Villager",
+        "Worried Farmer",
+        "Passing Guard"
+      ],
+      "stateFlags": {
+        "crowdUneasy": false,
+        "hunterSavedRumor": false,
+        "hunterAbandonedRumor": false,
+        "tavernTroubleRumor": false
+      }
+    },
+    "bar": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [
+        "Bartender Rowan",
+        "Drunk Patron",
+        "Traveling Merchant",
+        "Hooded Stranger"
+      ],
+      "stateFlags": {
+        "barDamaged": false,
+        "bartenderHostileTo": [],
+        "barOnFire": false,
+        "thiefActive": false,
+        "guardsWatchingBar": false
+      }
+    },
+    "street": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [
+        "Town Guard",
+        "Cart Driver",
+        "Beggar"
+      ],
+      "stateFlags": {
+        "cartCrashed": false,
+        "guardsAlert": false
+      }
+    },
+    "forest": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [
+        "Goblin"
+      ],
+      "stateFlags": {
+        "woundedHunterPresent": false,
+        "goblinReinforcementsIncoming": false,
+        "forestDanger": 0,
+        "reinforcementAmbushPending": false
+      }
+    }
+  },
+  "globalState": {
+    "villagersOnEdge": false,
+    "recentViolence": 0,
+    "guardsAlertLevel": 0,
+    "hunterSavedBy": null,
+    "hunterAbandonedBy": null
+  }
 }

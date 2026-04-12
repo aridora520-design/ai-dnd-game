@@ -1,0 +1,26 @@
+{
+  "name": "Hunt",
+  "location": "village",
+  "hp": 100,
+  "maxHp": 100,
+  "inventory": [],
+  "stats": {
+    "strength": 2,
+    "dexterity": 3,
+    "defense": 1,
+    "presence": 2
+  },
+  "reputation": {
+    "chaos": 0,
+    "honor": 0,
+    "intimidation": 0,
+    "title": "Unknown"
+  },
+  "flags": {
+    "knownTroublemaker": false,
+    "helpedTownsfolk": false,
+    "bartenderBarred": false,
+    "blockedFromStreet": false,
+    "wantedByGuards": false
+  }
+}
