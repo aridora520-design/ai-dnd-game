@@ -2,8 +2,17 @@
   "goblinAlive": true,
   "goblinHp": 40,
   "goblinCorpses": 0,
-  "forestPotionFound": false,
+  "forestPotionFound": true,
   "eventLog": [
+    "Hunt drinks a Health Potion, but gains no further benefit.",
+    "Hunt travels to street.",
+    "Hunt looks around.\n📍 FOREST\nYou are in the Forest.\n\n\n👀 You see:\n- Goblin (npc)\n- Goblin (hostile)\n\n🚪 Exits:\n- street\n",
+    "Hunt attempts: \"look\"",
+    "Hunt searches the forest and finds a Health Potion.",
+    "Hunt attempts: \"search\"",
+    "Hunt travels to forest.",
+    "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
+    "Hunt travels to street.",
     "The world begins. The village waits in silence."
   ],
   "locationStates": {
@@ -40,8 +49,44 @@
       }
     },
     "street": {
-      "activeEvent": null,
-      "recentHistory": [],
+      "activeEvent": {
+        "id": "street_cart",
+        "name": "Runaway Cart",
+        "chainId": "cart_chain",
+        "phase": 1,
+        "location": "street",
+        "phaseLabel": "runaway",
+        "createdAt": 1776054549439,
+        "expiresInMs": 600000,
+        "text": "A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "involvedNpc": [
+          "Cart Driver",
+          "Town Guard"
+        ],
+        "tags": [
+          "environment",
+          "street"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_debris",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_debris",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_debris",
+          "location": "street"
+        }
+      },
+      "recentHistory": [
+        "Hunt drinks a Health Potion, but gains no further benefit.",
+        "Hunt travels to street.",
+        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "Hunt travels to street."
+      ],
       "npcs": [
         "Town Guard",
         "Cart Driver",
@@ -54,7 +99,13 @@
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt looks around.\n📍 FOREST\nYou are in the Forest.\n\n\n👀 You see:\n- Goblin (npc)\n- Goblin (hostile)\n\n🚪 Exits:\n- street\n",
+        "Hunt attempts: \"look\"",
+        "Hunt searches the forest and finds a Health Potion.",
+        "Hunt attempts: \"search\"",
+        "Hunt travels to forest."
+      ],
       "npcs": [
         "Goblin"
       ],
@@ -62,7 +113,10 @@
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
         "forestDanger": 0,
-        "reinforcementAmbushPending": false
+        "reinforcementAmbushPending": false,
+        "forestStayCounter": 0,
+        "forestSpawnCooldown": 0,
+        "lastForestEventType": null
       }
     }
   },
