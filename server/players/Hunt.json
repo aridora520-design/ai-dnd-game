@@ -1,6 +1,6 @@
 {
   "name": "Hunt",
-  "location": "street",
+  "location": "forest",
   "hp": 100,
   "maxHp": 100,
   "inventory": [],
