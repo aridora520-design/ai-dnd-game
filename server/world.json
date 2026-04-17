@@ -1,18 +1,36 @@
 {
   "goblinAlive": true,
-  "goblinHp": 40,
+  "goblinHp": 19,
   "goblinCorpses": 0,
-  "forestPotionFound": true,
+  "forestPotionFound": false,
   "eventLog": [
-    "Hunt drinks a Health Potion, but gains no further benefit.",
-    "Hunt searches the forest and finds a Health Potion.",
-    "Hunt attempts: \"search\"",
+    "Hunt: The goblin strikes back and hits for 10 damage.",
+    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
+    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
+    "Hunt: Your shot strikes the goblin for 9 damage.",
+    "Hunt: You draw carefully and prepare to fire.",
+    "Hunt attempts: \"i shoot an arrow at goblin\"",
+    "Hunt asks for guidance.\nCOMMANDS\n- look: inspect your surroundings\n- attack goblin / shoot goblin: attack in combat\n- defend: reduce incoming damage and build honor\n- run: try to escape combat\n- search: search the area\n- rest: recover HP in the bar\n- drink: have a drink in the bar\n- eat: have a meal in the bar\n- barfight: start trouble in the bar\n- say hello: speak to nearby players\n- threaten: intimidate others in the right setting\n\nNEW EVENT LOOP\n- enter a place\n- something may happen\n- react in free text\n- your reaction changes the world\n\nTRY\n- I calm the drunk down\n- I tackle the thief\n- I stamp out the fire\n- I stop the cart\n- I help the hunter",
+    "Hunt attempts: \"help\"",
+    "Hunt: The goblin strikes back, but misses.",
+    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 12\n- Goblin HP: 28\n- Threat: Still active\n- Reputation: Unknown Figure\n\nClean hit. Not elegant, but effective.",
+    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
+    "Hunt: Your shot strikes the goblin for 12 damage.",
+    "Hunt: You shift your footing and aim at the goblin.",
+    "Hunt attempts: \"shoot \"",
+    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Miss\n- Goblin HP: 40\n- Threat: Still active\n- Reputation: Unknown Figure\n\nThe goblin survives, unfortunately encouraged.",
+    "Hunt: Your shot misses as the target jerks out of the way.",
+    "Hunt: You steady yourself and line up a ranged attack.",
+    "Hunt attempts: \"shoot \"",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"\"",
     "Hunt travels to forest.",
-    "Hunt travels to street.",
-    "Hunt travels to village.",
     "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
     "Hunt travels to street.",
     "Hunt travels to village.",
+    "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+    "Hunt escalates the confrontation. The room tips from argument into violence. Rowan will remember this.",
+    "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
     "Hunt travels to bar.",
     "The world begins. The village waits in silence."
   ],
@@ -20,7 +38,6 @@
     "village": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt travels to village.",
         "Hunt travels to village."
       ],
       "npcs": [
@@ -36,8 +53,43 @@
       }
     },
     "bar": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "bar_brawl",
+        "name": "Bar Brawl",
+        "chainId": "tavern_trouble",
+        "phase": 2,
+        "location": "bar",
+        "phaseLabel": "fight",
+        "createdAt": 1776399412383,
+        "expiresInMs": 600000,
+        "text": "The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+        "involvedNpc": [
+          "Drunk Patron",
+          "Traveling Merchant",
+          "Bartender Rowan"
+        ],
+        "tags": [
+          "violence",
+          "bar"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_guard_response",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_guard_response",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_guard_response",
+          "location": "street"
+        }
+      },
       "recentHistory": [
+        "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+        "Hunt escalates the confrontation. The room tips from argument into violence. Rowan will remember this.",
+        "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
         "Hunt travels to bar."
       ],
       "npcs": [
@@ -48,7 +100,9 @@
       ],
       "stateFlags": {
         "barDamaged": false,
-        "bartenderHostileTo": [],
+        "bartenderHostileTo": [
+          "Hunt"
+        ],
         "barOnFire": false,
         "thiefActive": false,
         "guardsWatchingBar": false
@@ -62,7 +116,7 @@
         "phase": 1,
         "location": "street",
         "phaseLabel": "stop",
-        "createdAt": 1776139477436,
+        "createdAt": 1776399427264,
         "expiresInMs": 600000,
         "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
         "involvedNpc": [
@@ -87,7 +141,6 @@
         }
       },
       "recentHistory": [
-        "Hunt travels to street.",
         "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
         "Hunt travels to street."
       ],
@@ -104,10 +157,16 @@
     "forest": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt drinks a Health Potion, but gains no further benefit.",
-        "Hunt searches the forest and finds a Health Potion.",
-        "Hunt attempts: \"search\"",
-        "Hunt travels to forest."
+        "Hunt: The goblin strikes back and hits for 10 damage.",
+        "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
+        "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
+        "Hunt: Your shot strikes the goblin for 9 damage.",
+        "Hunt: You draw carefully and prepare to fire.",
+        "Hunt attempts: \"i shoot an arrow at goblin\"",
+        "Hunt asks for guidance.\nCOMMANDS\n- look: inspect your surroundings\n- attack goblin / shoot goblin: attack in combat\n- defend: reduce incoming damage and build honor\n- run: try to escape combat\n- search: search the area\n- rest: recover HP in the bar\n- drink: have a drink in the bar\n- eat: have a meal in the bar\n- barfight: start trouble in the bar\n- say hello: speak to nearby players\n- threaten: intimidate others in the right setting\n\nNEW EVENT LOOP\n- enter a place\n- something may happen\n- react in free text\n- your reaction changes the world\n\nTRY\n- I calm the drunk down\n- I tackle the thief\n- I stamp out the fire\n- I stop the cart\n- I help the hunter",
+        "Hunt attempts: \"help\"",
+        "Hunt: The goblin strikes back, but misses.",
+        "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 12\n- Goblin HP: 28\n- Threat: Still active\n- Reputation: Unknown Figure\n\nClean hit. Not elegant, but effective."
       ],
       "npcs": [
         "Goblin"
@@ -117,7 +176,7 @@
         "goblinReinforcementsIncoming": false,
         "forestDanger": 0,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 4,
+        "forestStayCounter": 7,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null
       }

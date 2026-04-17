@@ -1,7 +1,7 @@
 {
   "name": "Hunt",
   "location": "forest",
-  "hp": 100,
+  "hp": 90,
   "maxHp": 100,
   "inventory": [],
   "stats": {
@@ -11,15 +11,15 @@
     "presence": 2
   },
   "reputation": {
-    "chaos": 0,
+    "chaos": 4,
     "honor": 0,
-    "intimidation": 0,
-    "title": "Unknown"
+    "intimidation": 5,
+    "title": "Menacing Figure"
   },
   "flags": {
     "knownTroublemaker": false,
     "helpedTownsfolk": false,
-    "bartenderBarred": false,
+    "bartenderBarred": true,
     "blockedFromStreet": false,
     "wantedByGuards": false
   }
