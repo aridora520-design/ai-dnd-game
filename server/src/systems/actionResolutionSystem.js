@@ -56,7 +56,7 @@ function createActionResolutionSystem({
         ) {
         addWorldEvent(
             worldState,
-            "💛 Enjoying the game?\nSupport it here:\n👉 https://your-gumroad-link",
+            "💛 Big moment. If you're enjoying the world, the support link is right below the action box.",
             locationKey
         );
         worldState.lastSupportTrigger = worldState.turn || 0;
