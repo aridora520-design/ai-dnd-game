@@ -201,7 +201,12 @@ function createRenderSystem({
         <button type="submit">Submit Action</button>
       </form>
     `;
-
+extra += `
+  <hr style="margin:20px 0;">
+  <p><strong>🌍 This is a shared world. What you do affects others.</strong></p>
+  <p>💛 Enjoying the game? Support its development:</p>
+  <p><a href="https://your-gumroad-link" target="_blank">👉 Support on Gumroad</a></p>
+`;
     return extra;
   }
 
