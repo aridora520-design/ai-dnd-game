@@ -49,6 +49,18 @@ function createActionResolutionSystem({
           `${player.name} ${config.winText}`,
           locationKey
         );
+        // 💛 SUPPORT TRIGGER
+        if (
+        !worldState.lastSupportTrigger ||
+        (worldState.turn || 0) - worldState.lastSupportTrigger > 5
+        ) {
+        addWorldEvent(
+            worldState,
+            "💛 Enjoying the game?\nSupport it here:\n👉 https://your-gumroad-link",
+            locationKey
+        );
+        worldState.lastSupportTrigger = worldState.turn || 0;
+        }
 
         closeActiveEvent(worldState, locationKey);
         return true;
