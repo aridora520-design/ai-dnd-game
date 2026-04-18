@@ -1,7 +1,7 @@
 {
   "name": "Hunt",
   "location": "forest",
-  "hp": 90,
+  "hp": 84,
   "maxHp": 100,
   "inventory": [],
   "stats": {
@@ -12,7 +12,7 @@
   },
   "reputation": {
     "chaos": 4,
-    "honor": 0,
+    "honor": 2,
     "intimidation": 5,
     "title": "Menacing Figure"
   },

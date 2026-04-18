@@ -418,53 +418,9 @@ TRY
 
   if (interpreted.type === "attack") {
   handleAttackAction(player, worldState, interpreted, flavor);}
-  else if (interpreted.type === "defend") {
+ else if (interpreted.type === "defend") {
   handleDefendAction(player, worldState);
-
-    if (player.location !== "forest" || !worldState.goblinAlive) {
-      addWorldEvent(worldState, `${player.name} tries to defend, but nothing threatens them.`, player.location);
-    } else {
-      const goblinRoll = rollD20();
-      const goblinTotal = goblinRoll + 1;
-      const defendDc = 14 + player.stats.defense;
-
-      if (goblinTotal >= defendDc) {
-        const reducedDamage = 3;
-        player.hp = Math.max(0, player.hp - reducedDamage);
-        updateReputation(player, { honor: 1 });
-        addWorldEvent(worldState, `${player.name}: ${narrateDefendPartial(reducedDamage)}\nHonor +1.`, player.location);
-      } else {
-        updateReputation(player, { honor: 1 });
-        addWorldEvent(worldState, `${player.name}: ${narrateDefendSuccess()}\nHonor +1.`, player.location);
-      }
-
-      if (player.hp <= 0) {
-        handlePlayerDeath(player, worldState);
-      }
-    }
-  
-    if (player.location !== "forest" || !worldState.goblinAlive) {
-      addWorldEvent(worldState, `${player.name} tries to run, but there is nothing to flee from.`, player.location);
-    } else {
-      const roll = rollD20();
-      const total = roll + player.stats.dexterity;
-      const dc = 11;
-
-      if (total >= dc) {
-        player.location = "street";
-        updateReputation(player, { honor: 1 });
-        addWorldEvent(worldState, `${player.name}: ${narrateRunSuccess()}\nHonor +1.`, "forest");
-      } else {
-        const goblinDamage = 5;
-        player.hp = Math.max(0, player.hp - goblinDamage);
-        addWorldEvent(worldState, `${player.name}: ${narrateRunFail(goblinDamage)}`, player.location);
-        updateReputation(player, { intimidation: 1 });
-      }
-        if (player.hp <= 0) {
-          handlePlayerDeath(player, worldState);
-        }
-      }
-  }
+}
   else if (interpreted.type === "run") {
   handleRunAction(player, worldState);
 }

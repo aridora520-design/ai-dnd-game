@@ -4,6 +4,15 @@
   "goblinCorpses": 0,
   "forestPotionFound": false,
   "eventLog": [
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt travels to forest.",
+    "The guards interpret the silence as guilt and grow even more suspicious.",
+    "Hunt travels to street.",
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
     "Hunt: The goblin strikes back and hits for 10 damage.",
     "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
     "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
@@ -109,38 +118,10 @@
       }
     },
     "street": {
-      "activeEvent": {
-        "id": "street_guard_stop",
-        "name": "Guard Confrontation",
-        "chainId": "guard_pressure",
-        "phase": 1,
-        "location": "street",
-        "phaseLabel": "stop",
-        "createdAt": 1776399427264,
-        "expiresInMs": 600000,
-        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
-        "involvedNpc": [
-          "Town Guard"
-        ],
-        "tags": [
-          "social",
-          "street"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnFail": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnIgnore": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        }
-      },
+      "activeEvent": null,
       "recentHistory": [
+        "The guards interpret the silence as guilt and grow even more suspicious.",
+        "Hunt travels to street.",
         "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
         "Hunt travels to street."
       ],
@@ -151,22 +132,22 @@
       ],
       "stateFlags": {
         "cartCrashed": false,
-        "guardsAlert": false
+        "guardsAlert": true
       }
     },
     "forest": {
       "activeEvent": null,
       "recentHistory": [
+        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt travels to forest.",
+        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
         "Hunt: The goblin strikes back and hits for 10 damage.",
         "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
-        "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
-        "Hunt: Your shot strikes the goblin for 9 damage.",
-        "Hunt: You draw carefully and prepare to fire.",
-        "Hunt attempts: \"i shoot an arrow at goblin\"",
-        "Hunt asks for guidance.\nCOMMANDS\n- look: inspect your surroundings\n- attack goblin / shoot goblin: attack in combat\n- defend: reduce incoming damage and build honor\n- run: try to escape combat\n- search: search the area\n- rest: recover HP in the bar\n- drink: have a drink in the bar\n- eat: have a meal in the bar\n- barfight: start trouble in the bar\n- say hello: speak to nearby players\n- threaten: intimidate others in the right setting\n\nNEW EVENT LOOP\n- enter a place\n- something may happen\n- react in free text\n- your reaction changes the world\n\nTRY\n- I calm the drunk down\n- I tackle the thief\n- I stamp out the fire\n- I stop the cart\n- I help the hunter",
-        "Hunt attempts: \"help\"",
-        "Hunt: The goblin strikes back, but misses.",
-        "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 12\n- Goblin HP: 28\n- Threat: Still active\n- Reputation: Unknown Figure\n\nClean hit. Not elegant, but effective."
+        "Hunt's brutal strike shakes the battlefield.\nIntimidation +1."
       ],
       "npcs": [
         "Goblin"
@@ -176,7 +157,7 @@
         "goblinReinforcementsIncoming": false,
         "forestDanger": 0,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 7,
+        "forestStayCounter": 2,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null
       }
@@ -185,7 +166,7 @@
   "globalState": {
     "villagersOnEdge": false,
     "recentViolence": 0,
-    "guardsAlertLevel": 0,
+    "guardsAlertLevel": 1,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
   }
