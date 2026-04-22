@@ -70,11 +70,22 @@ function createMovementSystem({ addWorldEvent }) {
     }
   }
 
-  function canEnterDestination(player, destination) {
+  function canEnterDestination(player, destination, worldState) {
     if (destination === "street" && player.flags.blockedFromStreet) {
       return {
         allowed: false,
         message: `${player.name} tries to head for the street, but the guards have orders to turn them back.`
+      };
+    }
+
+    if (
+      destination === "bar" &&
+      worldState &&
+      worldState.locationStates.bar.stateFlags.barRepairing
+    ) {
+      return {
+        allowed: false,
+        message: "The bar is closed while repairs are underway."
       };
     }
 

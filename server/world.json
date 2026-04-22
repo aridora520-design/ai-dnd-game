@@ -1,52 +1,90 @@
 {
+  "time": {
+    "day": 2,
+    "hour": 14,
+    "turn": 30
+  },
   "goblinAlive": true,
-  "goblinHp": 19,
+  "goblinHp": 40,
   "goblinCorpses": 0,
   "forestPotionFound": false,
   "eventLog": [
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt travels to forest.",
-    "The guards interpret the silence as guilt and grow even more suspicious.",
-    "Hunt travels to street.",
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: The goblin strikes back and hits for 10 damage.",
-    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
-    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
-    "Hunt: Your shot strikes the goblin for 9 damage.",
-    "Hunt: You draw carefully and prepare to fire.",
-    "Hunt attempts: \"i shoot an arrow at goblin\"",
-    "Hunt asks for guidance.\nCOMMANDS\n- look: inspect your surroundings\n- attack goblin / shoot goblin: attack in combat\n- defend: reduce incoming damage and build honor\n- run: try to escape combat\n- search: search the area\n- rest: recover HP in the bar\n- drink: have a drink in the bar\n- eat: have a meal in the bar\n- barfight: start trouble in the bar\n- say hello: speak to nearby players\n- threaten: intimidate others in the right setting\n\nNEW EVENT LOOP\n- enter a place\n- something may happen\n- react in free text\n- your reaction changes the world\n\nTRY\n- I calm the drunk down\n- I tackle the thief\n- I stamp out the fire\n- I stop the cart\n- I help the hunter",
-    "Hunt attempts: \"help\"",
-    "Hunt: The goblin strikes back, but misses.",
-    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 12\n- Goblin HP: 28\n- Threat: Still active\n- Reputation: Unknown Figure\n\nClean hit. Not elegant, but effective.",
-    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
-    "Hunt: Your shot strikes the goblin for 12 damage.",
-    "Hunt: You shift your footing and aim at the goblin.",
-    "Hunt attempts: \"shoot \"",
-    "Hunt\nRESULT\n- Action: Attack\n- Outcome: Miss\n- Goblin HP: 40\n- Threat: Still active\n- Reputation: Unknown Figure\n\nThe goblin survives, unfortunately encouraged.",
-    "Hunt: Your shot misses as the target jerks out of the way.",
-    "Hunt: You steady yourself and line up a ranged attack.",
-    "Hunt attempts: \"shoot \"",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"\"",
-    "Hunt travels to forest.",
-    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-    "Hunt travels to street.",
-    "Hunt travels to village.",
-    "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-    "Hunt escalates the confrontation. The room tips from argument into violence. Rowan will remember this.",
-    "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
+    "The bar repairs are completed ahead of schedule thanks to player help. The doors are open again.",
+    "Hunt helps repair the bar. Repair progress: 6/6.",
+    "Hunt attempts: \"repair\"",
+    "Hunt helps repair the bar. Repair progress: 5/6.",
+    "Hunt attempts: \"repair\"",
+    "Hunt helps repair the bar. Repair progress: 4/6.",
+    "Hunt attempts: \"repair\"",
+    "Hunt helps repair the bar. Repair progress: 3/6.",
+    "Hunt attempts: \"repair\"",
+    "Hunt helps repair the bar. Repair progress: 2/6.",
+    "Hunt attempts: \"repair\"",
+    "Hunt helps repair the bar. Repair progress: 1/6.",
+    "Hunt attempts: \"repair\"",
+    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
+    "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+    "Hunt starts a bar fight!\nTakes 8 damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.",
+    "The bar is forced to close for repairs. It should reopen by Day 2, 18:00 unless players repair it sooner.",
+    "Hunt attempts: \"barfight\"",
     "Hunt travels to bar.",
-    "The world begins. The village waits in silence."
+    "Hunt travels to village.",
+    "Hunt travels to bar.",
+    "Hunt travels to village.",
+    "Hunt travels to bar.",
+    "Hunt travels to village.",
+    "Hunt travels to bar.",
+    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+    "Hunt travels to village.",
+    "Hunt travels to bar.",
+    "Hunt travels to village.",
+    "Hunt travels to bar.",
+    "Hunt travels to village.",
+    "The bar does not currently need repairs.",
+    "Hunt attempts: \"repair\"",
+    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
+    "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+    "Hunt hangs back. No one steps in before fists start flying.",
+    "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
+    "Hunt travels to bar."
   ],
   "locationStates": {
     "village": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "village_tavern_gossip",
+        "name": "Tavern Gossip",
+        "chainId": "village_consequence",
+        "phase": 1,
+        "location": "village",
+        "phaseLabel": "gossip",
+        "createdAt": 1776697042340,
+        "expiresInMs": 600000,
+        "text": "The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+        "involvedNpc": [
+          "Old Villager",
+          "Worried Farmer"
+        ],
+        "tags": [
+          "village",
+          "gossip"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": null,
+        "nextOnFail": null,
+        "nextOnIgnore": null
+      },
       "recentHistory": [
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
         "Hunt travels to village."
       ],
       "npcs": [
@@ -54,52 +92,36 @@
         "Worried Farmer",
         "Passing Guard"
       ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
       "stateFlags": {
         "crowdUneasy": false,
         "hunterSavedRumor": false,
         "hunterAbandonedRumor": false,
-        "tavernTroubleRumor": false
+        "tavernTroubleRumor": true,
+        "rebuildingActive": false,
+        "rebuildingEndsAtTurn": null
       }
     },
     "bar": {
-      "activeEvent": {
-        "id": "bar_brawl",
-        "name": "Bar Brawl",
-        "chainId": "tavern_trouble",
-        "phase": 2,
-        "location": "bar",
-        "phaseLabel": "fight",
-        "createdAt": 1776399412383,
-        "expiresInMs": 600000,
-        "text": "The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-        "involvedNpc": [
-          "Drunk Patron",
-          "Traveling Merchant",
-          "Bartender Rowan"
-        ],
-        "tags": [
-          "violence",
-          "bar"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": {
-          "eventId": "street_guard_response",
-          "location": "street"
-        },
-        "nextOnFail": {
-          "eventId": "street_guard_response",
-          "location": "street"
-        },
-        "nextOnIgnore": {
-          "eventId": "street_guard_response",
-          "location": "street"
-        }
-      },
+      "activeEvent": null,
       "recentHistory": [
-        "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-        "Hunt escalates the confrontation. The room tips from argument into violence. Rowan will remember this.",
-        "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
-        "Hunt travels to bar."
+        "The bar repairs are completed ahead of schedule thanks to player help. The doors are open again.",
+        "Hunt helps repair the bar. Repair progress: 6/6.",
+        "Hunt attempts: \"repair\"",
+        "Hunt helps repair the bar. Repair progress: 5/6.",
+        "Hunt attempts: \"repair\"",
+        "Hunt helps repair the bar. Repair progress: 4/6.",
+        "Hunt attempts: \"repair\"",
+        "Hunt helps repair the bar. Repair progress: 3/6.",
+        "Hunt attempts: \"repair\"",
+        "Hunt helps repair the bar. Repair progress: 2/6."
       ],
       "npcs": [
         "Bartender Rowan",
@@ -107,6 +129,14 @@
         "Traveling Merchant",
         "Hooded Stranger"
       ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
       "stateFlags": {
         "barDamaged": false,
         "bartenderHostileTo": [
@@ -114,59 +144,102 @@
         ],
         "barOnFire": false,
         "thiefActive": false,
-        "guardsWatchingBar": false
+        "guardsWatchingBar": false,
+        "barRepairing": false,
+        "barClosedUntilTurn": null,
+        "barClosedUntilDay": null,
+        "barClosedUntilHour": null,
+        "repairContributionPoints": 0,
+        "barAutoRepairAtTurn": null,
+        "barRepairProgress": 0,
+        "barRepairNeeded": 0
       }
     },
     "street": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "street_guard_response",
+        "name": "Guard Response",
+        "chainId": "tavern_trouble",
+        "phase": 3,
+        "location": "street",
+        "phaseLabel": "response",
+        "createdAt": 1776697060741,
+        "expiresInMs": 600000,
+        "text": "Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+        "involvedNpc": [
+          "Town Guard"
+        ],
+        "tags": [
+          "street",
+          "guard"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        }
+      },
       "recentHistory": [
-        "The guards interpret the silence as guilt and grow even more suspicious.",
-        "Hunt travels to street.",
-        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-        "Hunt travels to street."
+        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble."
       ],
       "npcs": [
         "Town Guard",
         "Cart Driver",
         "Beggar"
       ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
       "stateFlags": {
         "cartCrashed": false,
-        "guardsAlert": true
+        "guardsAlert": false,
+        "blockedUntilTurn": null
       }
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [
-        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt travels to forest.",
-        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: The goblin strikes back and hits for 10 damage.",
-        "Hunt\nRESULT\n- Action: Attack\n- Outcome: Hit\n- Damage: 9\n- Goblin HP: 19\n- Threat: Still active\n- Reputation: Menacing Figure\n\nThat landed with conviction.",
-        "Hunt's brutal strike shakes the battlefield.\nIntimidation +1."
-      ],
+      "recentHistory": [],
       "npcs": [
         "Goblin"
       ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
         "forestDanger": 0,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 2,
+        "forestStayCounter": 0,
         "forestSpawnCooldown": 0,
-        "lastForestEventType": null
+        "lastForestEventType": null,
+        "goblinCorpsesDecayAtTurn": null
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
     "recentViolence": 0,
-    "guardsAlertLevel": 1,
+    "guardsAlertLevel": 0,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
   }

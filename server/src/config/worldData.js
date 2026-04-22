@@ -3,6 +3,14 @@ function createBaseLocationState() {
     activeEvent: null,
     recentHistory: [],
     npcs: [],
+    recovery: {
+      status: "normal", // normal | damaged | repairing
+      recoveryType: null,
+      repairEndsAtTurn: null,
+      repairEndsAtDay: null,
+      repairEndsAtHour: null,
+      contributions: 0
+    },
     stateFlags: {}
   };
 }
@@ -28,13 +36,21 @@ const world = {
 
 function createNewWorldState() {
   return {
+    time: {
+      day: 1,
+      hour: 8,
+      turn: 0
+    },
+
     goblinAlive: true,
     goblinHp: 40,
     goblinCorpses: 0,
     forestPotionFound: false,
+
     eventLog: [
       "The world begins. The village waits in silence."
     ],
+
     locationStates: {
       village: {
         ...createBaseLocationState(),
@@ -43,9 +59,12 @@ function createNewWorldState() {
           crowdUneasy: false,
           hunterSavedRumor: false,
           hunterAbandonedRumor: false,
-          tavernTroubleRumor: false
+          tavernTroubleRumor: false,
+          rebuildingActive: false,
+          rebuildingEndsAtTurn: null
         }
       },
+
       bar: {
         ...createBaseLocationState(),
         npcs: ["Bartender Rowan", "Drunk Patron", "Traveling Merchant", "Hooded Stranger"],
@@ -54,17 +73,26 @@ function createNewWorldState() {
           bartenderHostileTo: [],
           barOnFire: false,
           thiefActive: false,
-          guardsWatchingBar: false
+          guardsWatchingBar: false,
+
+          barRepairing: false,
+          barClosedUntilTurn: null,
+          barClosedUntilDay: null,
+          barClosedUntilHour: null,
+          repairContributionPoints: 0
         }
       },
+
       street: {
         ...createBaseLocationState(),
         npcs: ["Town Guard", "Cart Driver", "Beggar"],
         stateFlags: {
           cartCrashed: false,
-          guardsAlert: false
+          guardsAlert: false,
+          blockedUntilTurn: null
         }
       },
+
       forest: {
         ...createBaseLocationState(),
         npcs: ["Goblin"],
@@ -75,10 +103,13 @@ function createNewWorldState() {
           reinforcementAmbushPending: false,
           forestStayCounter: 0,
           forestSpawnCooldown: 0,
-          lastForestEventType: null
+          lastForestEventType: null,
+
+          goblinCorpsesDecayAtTurn: null
         }
       }
     },
+
     globalState: {
       villagersOnEdge: false,
       recentViolence: 0,

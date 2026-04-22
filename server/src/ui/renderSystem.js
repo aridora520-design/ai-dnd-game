@@ -1,88 +1,48 @@
-function createRenderSystem({
-  world,
-  getOtherPlayersInSameLocation
-}) {
-  function buildResultBlock(lines, flavor) {
-    let result = "RESULT\n";
+function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
+  function buildResultBlock(title, bodyLines = []) {
+    const safeLines = Array.isArray(bodyLines) ? bodyLines : [String(bodyLines)];
 
-    lines.forEach(line => {
-      result += `- ${line}\n`;
-    });
-
-    if (flavor) {
-      result += `\n${flavor}`;
-    }
-
-    return result;
+    return `
+      <div style="border:1px solid #444; padding:12px; margin:12px 0; border-radius:8px; background:#f8f8f8;">
+        <h3 style="margin-top:0;">${title}</h3>
+        ${safeLines.map(line => `<p style="margin:6px 0;">${line}</p>`).join("")}
+      </div>
+    `;
   }
 
   function buildLookDescription(player, worldState) {
-    const location = world[player.location];
-    const locState = worldState.locationStates[player.location];
-    const rep = player.reputation || { chaos: 0, honor: 0, intimidation: 0 };
+    const locationKey = player.location;
+    const location = world[locationKey];
+    const locationState = worldState.locationStates[locationKey];
+    const lines = [];
 
-    let description = `📍 ${player.location.toUpperCase()}\n`;
-    description += `${location.description}\n\n`;
-
-    if (player.location === "bar" || player.location === "village") {
-      if (rep.chaos >= 10) {
-        description += "People glance at you, then quickly look away. No one wants trouble.\n";
-      } else if (rep.honor >= 10) {
-        description += "A few locals nod in respect as you enter.\n";
-      } else if (rep.intimidation >= 10) {
-        description += "The room grows quieter. Conversations fade when you appear.\n";
-      }
+    if (location && location.description) {
+      lines.push(location.description);
     }
 
-    if (player.flags.wantedByGuards && (player.location === "village" || player.location === "street" || player.location === "bar")) {
-      description += "You can feel the weight of official attention. Guards are watching for you.\n";
+    const npcText = getNpcDescription(locationState);
+    if (npcText) {
+      lines.push(npcText);
     }
 
-    if (locState.activeEvent) {
-      description += `\n⚠ ACTIVE EVENT\n- ${locState.activeEvent.name}: ${locState.activeEvent.text}\n`;
+    const otherPlayers = getOtherPlayersInSameLocation(player) || [];
+    if (otherPlayers.length > 0) {
+      lines.push(`Other players here: ${otherPlayers.map(p => p.name).join(", ")}.`);
+    } else {
+      lines.push("No other players are here right now.");
     }
 
-    description += "\n👀 You see:\n";
-
-    if (locState.npcs && locState.npcs.length > 0) {
-      locState.npcs.forEach(npc => {
-        description += `- ${npc} (npc)\n`;
-      });
+    const locationExtraText = getLocationExtraText(player, worldState);
+    if (locationExtraText.length > 0) {
+      lines.push(...locationExtraText);
     }
 
-    if (player.location === "forest") {
-      if (worldState.goblinAlive) {
-        description += "- Goblin (hostile)\n";
-      }
-
-      const corpses = worldState.goblinCorpses || 0;
-      if (corpses > 0) {
-        description += `- ${corpses} Goblin corpse${corpses > 1 ? "s" : ""}\n`;
-      }
-
-      if (worldState.locationStates.forest.stateFlags.forestDanger > 0) {
-        description += `- Signs of danger in the brush (danger ${worldState.locationStates.forest.stateFlags.forestDanger})\n`;
-      }
-    }
-
-    const others = getOtherPlayersInSameLocation(player);
-    if (others.length > 0) {
-      others.forEach(p => {
-        description += `- ${p.name} (player)\n`;
-      });
-    }
-
-    description += "\n🚪 Exits:\n";
-    location.paths.forEach(p => {
-      description += `- ${p}\n`;
-    });
-
-    return description;
+    return lines.join("\n");
   }
 
   function getInventoryHtml(player, playerName) {
-    if (player.inventory.length === 0) {
-      return "<p>Your inventory is empty.</p>";
+    if (!player.inventory || player.inventory.length === 0) {
+      return `<p>Your inventory is empty.</p>`;
     }
 
     return `
@@ -90,124 +50,178 @@ function createRenderSystem({
         ${player.inventory.map((item, index) => `
           <li>
             ${item}
-            ${item === "Health Potion" ? ` <a href="/use-item/${index}?player=${encodeURIComponent(playerName)}">Use</a>` : ""}
+            <a href="/use-item/${index}?player=${encodeURIComponent(playerName)}" style="margin-left:8px;">
+              Use
+            </a>
           </li>
         `).join("")}
       </ul>
     `;
   }
 
-  function getOtherPlayersHtml(currentPlayer) {
-    const others = getOtherPlayersInSameLocation(currentPlayer);
+  function getOtherPlayersHtml(player) {
+    const otherPlayers = getOtherPlayersInSameLocation(player) || [];
 
-    if (others.length === 0) {
-      return "<p>No other players are here.</p>";
+    if (otherPlayers.length === 0) {
+      return `<p>No one else is here.</p>`;
     }
 
     return `
       <ul>
-        ${others.map(player => `<li>${player.name}</li>`).join("")}
+        ${otherPlayers.map(other => `
+          <li>
+            <strong>${other.name}</strong>
+            — HP ${other.hp}/${other.maxHp}
+            — Reputation: ${other.reputation?.title || "Unknown"}
+          </li>
+        `).join("")}
       </ul>
     `;
   }
 
   function getLocationExtra(player, worldState) {
-    const locState = worldState.locationStates[player.location];
-    let extra = "";
+    const lines = getLocationExtraText(player, worldState);
 
-    if (player.location === "forest") {
-      if (worldState.goblinAlive) {
-        extra += `
-          <p>A goblin is lurking here.</p>
-          <p><strong>Goblin HP:</strong> ${worldState.goblinHp}</p>
-        `;
-      } else {
-        extra += `<p>The forest is eerily quiet...</p>`;
-      }
-
-      const corpses = worldState.goblinCorpses || 0;
-      if (corpses === 1) {
-        extra += `<p>There is 1 goblin corpse on the ground.</p>`;
-      } else if (corpses > 1) {
-        extra += `<p>There are ${corpses} goblin corpses on the ground.</p>`;
-      }
-
-      if (locState.stateFlags.forestDanger > 0) {
-        extra += `<p><strong>Forest Danger:</strong> ${locState.stateFlags.forestDanger}</p>`;
-      }
+    if (lines.length === 0) {
+      return "";
     }
 
-    if (!worldState.goblinAlive) {
-      extra += `<p>The longer you remain here, the more likely more goblins are to find you.</p>`;
-    }
-
-    if (player.location === "bar") {
-      extra += `
-        <p>You can rest here and recover your strength.</p>
-        <a href="/rest?player=${encodeURIComponent(player.name)}">Rest</a>
-        <p>Bar actions to try: drink, eat, barfight, calm someone down, threaten, help, watch</p>
-      `;
-
-      if (locState.stateFlags.barDamaged) {
-        extra += `<p><strong>The bar still shows damage from earlier chaos.</strong></p>`;
-      }
-
-      if (locState.stateFlags.barOnFire) {
-        extra += `<p><strong>The bar is on fire.</strong></p>`;
-      }
-
-      if (locState.stateFlags.bartenderHostileTo.includes(player.name)) {
-        extra += `<p><strong>Bartender Rowan is hostile to you and will not let you rest easily.</strong></p>`;
-      }
-
-      if (locState.stateFlags.guardsWatchingBar) {
-        extra += `<p><strong>The bar is being watched more closely by the guards.</strong></p>`;
-      }
-    }
-
-    if (player.location === "street") {
-      if (locState.stateFlags.cartCrashed) {
-        extra += `<p>Broken wood and spilled cargo clutter parts of the street.</p>`;
-      }
-
-      if (locState.stateFlags.guardsAlert) {
-        extra += `<p>The town guards are alert here.</p>`;
-      }
-    }
-
-    if (player.flags.blockedFromStreet) {
-      extra += `<p><strong>Guard Restriction:</strong> the guards will block you from entering the street until your reputation improves.</p>`;
-    }
-
-    if (player.flags.bartenderBarred) {
-      extra += `<p><strong>Bar Restriction:</strong> you are currently barred from easy access or rest at the bar.</p>`;
-    }
-
-    if (locState.activeEvent) {
-      extra += `
-        <div style="border:2px solid #a00; padding:12px; margin:14px 0; background:#fff4f4;">
-          <h3>ACTIVE EVENT</h3>
-          <p><strong>${locState.activeEvent.name}</strong></p>
-          <p>${locState.activeEvent.text}</p>
-          <p><em>React in free text.</em></p>
-        </div>
-      `;
-    }
-
-    extra += `
-      <p><strong>Type an action:</strong></p>
-      <form method="POST" action="/action?player=${encodeURIComponent(player.name)}">
-        <input type="text" name="action" placeholder="e.g. say We should run / attack goblin / I calm the drunk down" style="width: 420px;" />
-        <button type="submit">Submit Action</button>
-      </form>
+    return `
+      <div style="margin:12px 0; padding:10px; border:1px solid #bbb; border-radius:8px; background:#fcfcfc;">
+        <h3 style="margin-top:0;">Local Status</h3>
+        ${lines.map(line => `<p style="margin:6px 0;">${line}</p>`).join("")}
+      </div>
     `;
-extra += `
-  <hr style="margin:20px 0;">
-  <p><strong>🌍 This is a shared world. What you do affects others.</strong></p>
-  <p>💛 Enjoying the game? Support its development:</p>
-  <p><a href="https://your-gumroad-link" target="_blank">👉 Support on Gumroad</a></p>
-`;
-    return extra;
+  }
+
+  function getLocationExtraText(player, worldState) {
+    const locationKey = player.location;
+    const locationState = worldState.locationStates[locationKey];
+    const lines = [];
+
+    if (!locationState) {
+      return lines;
+    }
+
+    if (locationKey === "bar") {
+      const barFlags = locationState.stateFlags || {};
+
+      if (barFlags.barRepairing) {
+        const dayText = barFlags.barClosedUntilDay != null ? `Day ${barFlags.barClosedUntilDay}` : "an unknown day";
+        const hourText =
+          barFlags.barClosedUntilHour != null
+            ? `${String(barFlags.barClosedUntilHour).padStart(2, "0")}:00`
+            : "unknown time";
+
+        lines.push(`The bar is currently closed for repairs.`);
+        lines.push(`Estimated reopening: ${dayText}, ${hourText}.`);
+      }
+
+      if (barFlags.barDamaged && !barFlags.barRepairing) {
+        lines.push(`The bar still shows signs of recent damage.`);
+      }
+
+      if (barFlags.barOnFire) {
+        lines.push(`Flames or smoke still linger here.`);
+      }
+
+      if (barFlags.thiefActive) {
+        lines.push(`There are nervous whispers about a thief in the bar.`);
+      }
+
+      if (barFlags.guardsWatchingBar) {
+        lines.push(`The guards are keeping a close eye on this place.`);
+      }
+
+      if (player.flags?.bartenderBarred) {
+        lines.push(`Bartender Rowan does not currently welcome you here.`);
+      }
+    }
+
+    if (locationKey === "village") {
+      const villageFlags = locationState.stateFlags || {};
+
+      if (villageFlags.crowdUneasy) {
+        lines.push(`The crowd seems uneasy.`);
+      }
+
+      if (villageFlags.hunterSavedRumor) {
+        lines.push(`People are talking about a hunter who was saved.`);
+      }
+
+      if (villageFlags.hunterAbandonedRumor) {
+        lines.push(`There are dark rumors about someone abandoning a hunter in need.`);
+      }
+
+      if (villageFlags.tavernTroubleRumor) {
+        lines.push(`Word of tavern trouble has spread through the village.`);
+      }
+    }
+
+    if (locationKey === "street") {
+      const streetFlags = locationState.stateFlags || {};
+
+      if (streetFlags.cartCrashed) {
+        lines.push(`A crash has left the street in disarray.`);
+      }
+
+      if (streetFlags.guardsAlert) {
+        lines.push(`The guards are on alert here.`);
+      }
+
+      if (player.flags?.blockedFromStreet) {
+        lines.push(`You are personally being watched by the guards.`);
+      }
+    }
+
+    if (locationKey === "forest") {
+      const forestFlags = locationState.stateFlags || {};
+
+      if (worldState.goblinAlive) {
+        lines.push(`You sense danger nearby. A goblin is active in the forest.`);
+      } else if (worldState.goblinCorpses > 0) {
+        lines.push(`You see signs of recent violence. Goblin corpses in area: ${worldState.goblinCorpses}.`);
+      }
+
+      if (forestFlags.woundedHunterPresent) {
+        lines.push(`A wounded hunter is somewhere nearby.`);
+      }
+
+      if (forestFlags.goblinReinforcementsIncoming) {
+        lines.push(`You hear signs that goblin reinforcements are on the way.`);
+      }
+
+      if (forestFlags.reinforcementAmbushPending) {
+        lines.push(`The forest feels wrong. An ambush may be close.`);
+      }
+
+      if (typeof forestFlags.forestDanger === "number" && forestFlags.forestDanger > 0) {
+        lines.push(`Forest danger level: ${forestFlags.forestDanger}.`);
+      }
+    }
+
+    const recovery = locationState.recovery;
+    if (recovery && recovery.status === "repairing" && locationKey !== "bar") {
+      const dayText =
+        recovery.repairEndsAtDay != null ? `Day ${recovery.repairEndsAtDay}` : "an unknown day";
+      const hourText =
+        recovery.repairEndsAtHour != null
+          ? `${String(recovery.repairEndsAtHour).padStart(2, "0")}:00`
+          : "unknown time";
+
+      lines.push(`Recovery in progress.`);
+      lines.push(`Expected completion: ${dayText}, ${hourText}.`);
+    }
+
+    return lines;
+  }
+
+  function getNpcDescription(locationState) {
+    if (!locationState || !Array.isArray(locationState.npcs) || locationState.npcs.length === 0) {
+      return "No notable figures stand out here.";
+    }
+
+    return `You notice: ${locationState.npcs.join(", ")}.`;
   }
 
   return {

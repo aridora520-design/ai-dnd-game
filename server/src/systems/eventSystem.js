@@ -8,7 +8,8 @@ function createEventSystem({
   handlePlayerDeath,
   getForestEscalationEventId,
   updateForestPressure,
-  shouldSpawnForestEscalation
+  shouldSpawnForestEscalation,
+  scheduleBarRepair
 }) {
   function createEventTemplate(eventId, location, data = {}) {
     const now = Date.now();
@@ -481,64 +482,73 @@ function createEventSystem({
     locState.activeEvent = null;
   }
 
-  function resolveExpiredEvent(worldState, locationKey, eventObj) {
-    if (eventObj.id === "bar_brawl") {
-      worldState.locationStates.bar.stateFlags.barDamaged = true;
-      addWorldEvent(
-        worldState,
-        "No one stops the fight in time. Tables splinter, mugs shatter, and the bar is left damaged.",
-        locationKey
-      );
-    } else if (eventObj.id === "bar_thief") {
-      worldState.locationStates.bar.stateFlags.thiefActive = false;
-      addWorldEvent(
-        worldState,
-        "No one reacts fast enough. The thief disappears into the night with the purse.",
-        locationKey
-      );
-    } else if (eventObj.id === "bar_fire") {
-      worldState.locationStates.bar.stateFlags.barDamaged = true;
-      worldState.locationStates.bar.stateFlags.barOnFire = false;
-      addWorldEvent(
-        worldState,
-        "The fire spreads before anyone gets control of it. Smoke stains the ceiling and part of the bar is ruined.",
-        locationKey
-      );
-    } else if (eventObj.id === "street_cart") {
-      worldState.locationStates.street.stateFlags.cartCrashed = true;
-      addWorldEvent(
-        worldState,
-        "The runaway cart smashes into the street corner in a burst of wood and cargo.",
-        locationKey
-      );
-    } else if (
-      eventObj.id === "street_guard_stop" ||
-      eventObj.id === "bar_guard_question" ||
-      eventObj.id === "village_guard_question"
-    ) {
-      worldState.locationStates.street.stateFlags.guardsAlert = true;
-      worldState.globalState.guardsAlertLevel += 1;
-      addWorldEvent(
-        worldState,
-        "The guards interpret the silence as guilt and grow even more suspicious.",
-        locationKey
-      );
-    } else if (eventObj.id === "forest_hunter") {
-      worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
-      addWorldEvent(
-        worldState,
-        "The wounded hunter is left behind. By the time anyone checks again, they are gone.",
-        locationKey
-      );
-    } else if (eventObj.id === "forest_reinforcement_ambush") {
-      worldState.locationStates.forest.stateFlags.forestDanger += 1;
-      addWorldEvent(
-        worldState,
-        "The unseen reinforcement never fully reveals itself, but the forest grows more dangerous around you.",
-        locationKey
-      );
-    }
+ function resolveExpiredEvent(worldState, locationKey, eventObj) {
+  if (eventObj.id === "bar_brawl") {
+    worldState.locationStates.bar.stateFlags.barDamaged = true;
+    scheduleBarRepair(worldState, 12);
+
+    addWorldEvent(
+      worldState,
+      "No one stops the fight in time. Tables splinter, mugs shatter, and the bar is left damaged.",
+      locationKey
+    );
+  } else if (eventObj.id === "bar_thief") {
+    worldState.locationStates.bar.stateFlags.thiefActive = false;
+
+    addWorldEvent(
+      worldState,
+      "No one reacts fast enough. The thief disappears into the night with the purse.",
+      locationKey
+    );
+  } else if (eventObj.id === "bar_fire") {
+    worldState.locationStates.bar.stateFlags.barDamaged = true;
+    worldState.locationStates.bar.stateFlags.barOnFire = false;
+    scheduleBarRepair(worldState, 12);
+
+    addWorldEvent(
+      worldState,
+      "The fire spreads before anyone gets control of it. Smoke stains the ceiling and part of the bar is ruined.",
+      locationKey
+    );
+  } else if (eventObj.id === "street_cart") {
+    worldState.locationStates.street.stateFlags.cartCrashed = true;
+
+    addWorldEvent(
+      worldState,
+      "The runaway cart smashes into the street corner in a burst of wood and cargo.",
+      locationKey
+    );
+  } else if (
+    eventObj.id === "street_guard_stop" ||
+    eventObj.id === "bar_guard_question" ||
+    eventObj.id === "village_guard_question"
+  ) {
+    worldState.locationStates.street.stateFlags.guardsAlert = true;
+    worldState.globalState.guardsAlertLevel += 1;
+
+    addWorldEvent(
+      worldState,
+      "The guards interpret the silence as guilt and grow even more suspicious.",
+      locationKey
+    );
+  } else if (eventObj.id === "forest_hunter") {
+    worldState.locationStates.forest.stateFlags.woundedHunterPresent = false;
+
+    addWorldEvent(
+      worldState,
+      "The wounded hunter is left behind. By the time anyone checks again, they are gone.",
+      locationKey
+    );
+  } else if (eventObj.id === "forest_reinforcement_ambush") {
+    worldState.locationStates.forest.stateFlags.forestDanger += 1;
+
+    addWorldEvent(
+      worldState,
+      "The unseen reinforcement never fully reveals itself, but the forest grows more dangerous around you.",
+      locationKey
+    );
   }
+}
 
   function closeActiveEvent(worldState, locationKey) {
     if (worldState.locationStates[locationKey]) {
