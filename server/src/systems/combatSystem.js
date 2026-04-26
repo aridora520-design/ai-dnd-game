@@ -9,6 +9,140 @@ function createCombatSystem({
   savePlayer,
   saveWorldState
 }) {
+  function hasSkill(player, skillName) {
+    return Array.isArray(player.skills) && player.skills.includes(skillName);
+  }
+
+  function consumeTempBonus(player, key) {
+    const value = typeof player[key] === "number" ? player[key] : 0;
+    delete player[key];
+    return value;
+  }
+
+  function getBattleHardenedReduction(player) {
+    return hasSkill(player, "battle_hardened") ? 1 : 0;
+  }
+
+  function ensureProgressionFields(player) {
+    player.traits = player.traits || {
+      honor: 0,
+      greed: 0,
+      fear: 0,
+      influence: 0,
+      chaos: 0
+    };
+
+    player.progression = player.progression || {
+      actionCounts: {}
+    };
+
+    player.title = player.title || "Wanderer";
+    player.skills = player.skills || [];
+  }
+
+  function trackAction(player, actionType) {
+    ensureProgressionFields(player);
+
+    if (!player.progression.actionCounts[actionType]) {
+      player.progression.actionCounts[actionType] = 0;
+    }
+
+    player.progression.actionCounts[actionType] += 1;
+  }
+
+ function updateTraits(player, changes) {
+  ensureProgressionFields(player);
+
+  for (const [trait, delta] of Object.entries(changes || {})) {
+    if (typeof player.traits[trait] !== "number") {
+      player.traits[trait] = 0;
+    }
+
+    player.traits[trait] += delta;
+
+    if (player.traits[trait] < 0) {
+      player.traits[trait] = 0;
+    }
+  }
+}
+
+  function applyStatGrowth(player, actionType) {
+    ensureProgressionFields(player);
+    const counts = player.progression?.actionCounts || {};
+
+    if (actionType === "attack" && counts.attack % 5 === 0) {
+      player.stats.strength += 1;
+    }
+
+    if (actionType === "run" && counts.run % 5 === 0) {
+      player.stats.dexterity += 1;
+    }
+
+    if (actionType === "drink" && counts.drink % 5 === 0) {
+      player.hp = Math.max(1, player.hp - 1);
+    }
+
+    if (actionType === "defend" && counts.defend % 5 === 0) {
+      player.stats.defense += 1;
+    }
+
+    if (actionType === "threaten" && counts.threaten % 5 === 0) {
+      player.stats.presence += 1;
+    }
+  }
+
+  function updatePlayerTitle(player) {
+    ensureProgressionFields(player);
+    const counts = player.progression?.actionCounts || {};
+
+    const attack = counts.attack || 0;
+    const defend = counts.defend || 0;
+    const run = counts.run || 0;
+    const drink = counts.drink || 0;
+    const threaten = counts.threaten || 0;
+
+    if (attack >= 20) {
+      player.title = "Slayer";
+    } else if (defend >= 20) {
+      player.title = "Guardian";
+    } else if (threaten >= 15) {
+      player.title = "Menace";
+    } else if (run >= 15) {
+      player.title = "Coward";
+    } else if (drink >= 10) {
+      player.title = "Drunk";
+    } else {
+      player.title = "Wanderer";
+    }
+  }
+
+  const titleSkills = {
+    Wanderer: [],
+    Slayer: ["power_strike", "battle_hardened"],
+    Guardian: ["stand_ground", "shield_wall"],
+    Menace: ["intimidating_presence", "reckless_swing"],
+    Coward: ["quick_escape"],
+    Drunk: ["liquid_courage", "unpredictable_stagger"]
+  };
+
+  function updatePlayerSkills(player) {
+    ensureProgressionFields(player);
+    const title = player.title || "Wanderer";
+    player.skills = [...(titleSkills[title] || [])];
+  }
+
+  function applyCombatProgression(player, actionType, traitChanges) {
+    trackAction(player, actionType);
+
+    if (traitChanges) {
+      updateTraits(player, traitChanges);
+    }
+
+    applyStatGrowth(player, actionType);
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
+  }
+
   function getAttackFlavor(outcome) {
     const options = {
       hit: [
@@ -184,6 +318,24 @@ function createCombatSystem({
     saveWorldState(worldState);
   }
 
+  function queueNextGoblin(worldState) {
+    const forestFlags = worldState.locationStates.forest.stateFlags;
+    forestFlags.pendingForestEncounter = true;
+  }
+
+  function markForestQuiet(worldState) {
+    addWorldEvent(
+      worldState,
+      "For a heartbeat, the woods hold their breath.",
+      "forest"
+    );
+    addWorldEvent(
+      worldState,
+      "The forest suddenly goes quiet. You feel something in the air. You can wait, search, or run.",
+      "forest"
+    );
+  }
+
   function handleAttackAction(player, worldState, interpreted, flavor) {
     if (player.location !== "forest" || !worldState.goblinAlive) {
       const resultText = buildResultBlock(
@@ -192,21 +344,36 @@ function createCombatSystem({
           "Outcome: Invalid",
           "Target: None"
         ],
-        "You swing at nothing and achieve exactly that."
+        "There is nothing here to attack."
       );
 
       addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
       return;
     }
 
+    applyCombatProgression(player, "attack", { chaos: 1 });
+
     addWorldEvent(worldState, `${player.name}: ${narrateAttackIntro(interpreted.style, flavor)}`, player.location);
 
+    const powerStrikeBonus =
+      (hasSkill(player, "power_strike") ? 2 : 0) +
+      consumeTempBonus(player, "tempPowerStrikeBonus");
+
+    const liquidCourageAttackBonus = hasSkill(player, "liquid_courage") ? 1 : 0;
     const attackRoll = rollD20();
-    const total = attackRoll + player.stats.strength;
+    const total = attackRoll + player.stats.strength + liquidCourageAttackBonus;
     const dc = 12;
 
+    if (hasSkill(player, "power_strike")) {
+      addWorldEvent(worldState, `${player.name} fights with crushing force. [Power Strike]`, player.location);
+    }
+
+    if (hasSkill(player, "liquid_courage")) {
+      addWorldEvent(worldState, `${player.name} throws themselves into danger with reckless nerve. [Liquid Courage]`, player.location);
+    }
+
     if (attackRoll === 20) {
-      const damage = 12 + rollDie(6);
+      const damage = 12 + rollDie(6) + powerStrikeBonus;
       updateReputation(player, { chaos: 2, intimidation: 2 });
       worldState.goblinHp -= damage;
 
@@ -221,8 +388,6 @@ function createCombatSystem({
         addWorldEvent(worldState, `${player.name} stands over the fallen goblin.\nIntimidation +2.`, player.location);
         addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.", player.location);
 
-        worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming = true;
-        worldState.locationStates.forest.stateFlags.reinforcementAmbushPending = true;
         worldState.locationStates.forest.stateFlags.forestDanger += 1;
         worldState.globalState.recentViolence += 1;
 
@@ -232,16 +397,19 @@ function createCombatSystem({
             "Action: Attack",
             "Outcome: Kill",
             `Damage: ${damage}`,
+            powerStrikeBonus > 0 ? `Skill: Power Strike +${powerStrikeBonus}` : null,
             `Goblin Corpses: ${worldState.goblinCorpses}`,
-            "Threat: Reinforcements may ambush you deeper in the forest",
             `Reputation: ${player.reputation.title}`,
             reactionText ? `World: ${reactionText}` : null
           ].filter(Boolean),
-          "You won the fight decisively, but the forest may not be finished with you."
+          "You drop the goblin. Then the forest goes still."
         );
 
         addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
         worldState.goblinHp = 0;
+
+        queueNextGoblin(worldState);
+        markForestQuiet(worldState);
       } else {
         const reactionText = getReputationReaction(player.reputation);
         const resultText = buildResultBlock(
@@ -249,8 +417,8 @@ function createCombatSystem({
             "Action: Attack",
             "Outcome: Critical Hit",
             `Damage: ${damage}`,
+            powerStrikeBonus > 0 ? `Skill: Power Strike +${powerStrikeBonus}` : null,
             `Goblin HP: ${Math.max(0, worldState.goblinHp)}`,
-            "Threat: Still active",
             `Reputation: ${player.reputation.title}`,
             reactionText ? `World: ${reactionText}` : null
           ].filter(Boolean),
@@ -280,7 +448,7 @@ function createCombatSystem({
     }
 
     if (total >= dc) {
-      const damage = 6 + rollDie(6);
+      const damage = 6 + rollDie(6) + powerStrikeBonus;
       updateReputation(player, { chaos: 1, intimidation: 1 });
       worldState.goblinHp -= damage;
 
@@ -300,8 +468,6 @@ function createCombatSystem({
         addWorldEvent(worldState, `${player.name} stands over the fallen goblin.\nIntimidation +2.`, player.location);
         addWorldEvent(worldState, "With its dying breath, the goblin blows on a horn and calls for reinforcements.", player.location);
 
-        worldState.locationStates.forest.stateFlags.goblinReinforcementsIncoming = true;
-        worldState.locationStates.forest.stateFlags.reinforcementAmbushPending = true;
         worldState.locationStates.forest.stateFlags.forestDanger += 1;
         worldState.globalState.recentViolence += 1;
 
@@ -311,16 +477,19 @@ function createCombatSystem({
             "Action: Attack",
             "Outcome: Kill",
             `Damage: ${damage}`,
+            powerStrikeBonus > 0 ? `Skill: Power Strike +${powerStrikeBonus}` : null,
             `Goblin Corpses: ${worldState.goblinCorpses}`,
-            "Threat: Reinforcements may ambush you deeper in the forest",
             `Reputation: ${player.reputation.title}`,
             reactionText ? `World: ${reactionText}` : null
           ].filter(Boolean),
-          "You won the fight, but the forest may not be finished with you."
+          "You win the clash. The woods fall strangely silent."
         );
 
         addWorldEvent(worldState, `${player.name}\n${resultText}`, player.location);
         worldState.goblinHp = 0;
+
+        queueNextGoblin(worldState);
+        markForestQuiet(worldState);
       } else {
         const reactionText = getReputationReaction(player.reputation);
         const resultText = buildResultBlock(
@@ -328,8 +497,8 @@ function createCombatSystem({
             "Action: Attack",
             "Outcome: Hit",
             `Damage: ${damage}`,
+            powerStrikeBonus > 0 ? `Skill: Power Strike +${powerStrikeBonus}` : null,
             `Goblin HP: ${Math.max(0, worldState.goblinHp)}`,
-            "Threat: Still active",
             `Reputation: ${player.reputation.title}`,
             reactionText ? `World: ${reactionText}` : null
           ].filter(Boolean),
@@ -343,9 +512,14 @@ function createCombatSystem({
         const playerDefenseDc = 10 + player.stats.defense;
 
         if (goblinTotal >= playerDefenseDc) {
-          const goblinDamage = 6 + rollDie(4);
+          let goblinDamage = 6 + rollDie(4);
+          goblinDamage = Math.max(1, goblinDamage - getBattleHardenedReduction(player));
           player.hp = Math.max(0, player.hp - goblinDamage);
           addWorldEvent(worldState, `${player.name}: ${narrateGoblinAttackHit(goblinDamage)}`, player.location);
+
+          if (hasSkill(player, "battle_hardened")) {
+            addWorldEvent(worldState, `${player.name} absorbs some of the blow through sheer toughness. [Battle Hardened]`, player.location);
+          }
         } else {
           addWorldEvent(worldState, `${player.name}: ${narrateGoblinAttackMiss()}`, player.location);
         }
@@ -370,7 +544,6 @@ function createCombatSystem({
         "Action: Attack",
         "Outcome: Miss",
         `Goblin HP: ${worldState.goblinHp}`,
-        "Threat: Still active",
         `Reputation: ${player.reputation.title}`,
         reactionText ? `World: ${reactionText}` : null
       ].filter(Boolean),
@@ -386,12 +559,30 @@ function createCombatSystem({
       return;
     }
 
+    applyCombatProgression(player, "defend", { honor: 1, chaos: -1 });
+
+    const defendBonus =
+      (hasSkill(player, "stand_ground") ? 2 : 0) +
+      (hasSkill(player, "shield_wall") ? 2 : 0) +
+      consumeTempBonus(player, "tempDefenseBonus");
+
     const goblinRoll = rollD20();
     const goblinTotal = goblinRoll + 1;
-    const defendDc = 14 + player.stats.defense;
+    const defendDc = 14 + player.stats.defense + defendBonus;
+
+    if (hasSkill(player, "stand_ground")) {
+      addWorldEvent(worldState, `${player.name} plants their feet and refuses to yield. [Stand Ground]`, player.location);
+    }
+
+    if (hasSkill(player, "shield_wall")) {
+      addWorldEvent(worldState, `${player.name} braces behind an almost immovable guard. [Shield Wall]`, player.location);
+    }
 
     if (goblinTotal >= defendDc) {
-      const reducedDamage = 3;
+      let reducedDamage = hasSkill(player, "shield_wall") ? 1 : 3;
+      if (hasSkill(player, "stand_ground")) reducedDamage = Math.max(1, reducedDamage - 1);
+      reducedDamage = Math.max(1, reducedDamage - getBattleHardenedReduction(player));
+
       player.hp = Math.max(0, player.hp - reducedDamage);
       updateReputation(player, { honor: 1 });
       addWorldEvent(worldState, `${player.name}: ${narrateDefendPartial(reducedDamage)}\nHonor +1.`, player.location);
@@ -411,16 +602,27 @@ function createCombatSystem({
       return;
     }
 
+    applyCombatProgression(player, "run", { fear: 1 });
+
+    const quickEscapeBonus =
+      (hasSkill(player, "quick_escape") ? 2 : 0) +
+      consumeTempBonus(player, "tempRunBonus");
+
     const roll = rollD20();
-    const total = roll + player.stats.dexterity;
+    const total = roll + player.stats.dexterity + quickEscapeBonus;
     const dc = 11;
+
+    if (hasSkill(player, "quick_escape")) {
+      addWorldEvent(worldState, `${player.name} spots the safest opening instantly. [Quick Escape]`, player.location);
+    }
 
     if (total >= dc) {
       player.location = "street";
       updateReputation(player, { honor: 1 });
       addWorldEvent(worldState, `${player.name}: ${narrateRunSuccess()}\nHonor +1.`, "forest");
     } else {
-      const goblinDamage = 5;
+      let goblinDamage = 5;
+      goblinDamage = Math.max(1, goblinDamage - getBattleHardenedReduction(player));
       player.hp = Math.max(0, player.hp - goblinDamage);
       addWorldEvent(worldState, `${player.name}: ${narrateRunFail(goblinDamage)}`, player.location);
       updateReputation(player, { intimidation: 1 });

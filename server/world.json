@@ -5,88 +5,55 @@
     "turn": 30
   },
   "goblinAlive": true,
-  "goblinHp": 40,
-  "goblinCorpses": 0,
+  "goblinHp": 12,
+  "goblinCorpses": 2,
   "forestPotionFound": false,
   "eventLog": [
-    "The bar repairs are completed ahead of schedule thanks to player help. The doors are open again.",
-    "Hunt helps repair the bar. Repair progress: 6/6.",
-    "Hunt attempts: \"repair\"",
-    "Hunt helps repair the bar. Repair progress: 5/6.",
-    "Hunt attempts: \"repair\"",
-    "Hunt helps repair the bar. Repair progress: 4/6.",
-    "Hunt attempts: \"repair\"",
-    "Hunt helps repair the bar. Repair progress: 3/6.",
-    "Hunt attempts: \"repair\"",
-    "Hunt helps repair the bar. Repair progress: 2/6.",
-    "Hunt attempts: \"repair\"",
-    "Hunt helps repair the bar. Repair progress: 1/6.",
-    "Hunt attempts: \"repair\"",
-    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
-    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
-    "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-    "Hunt starts a bar fight!\nTakes 8 damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.",
-    "The bar is forced to close for repairs. It should reopen by Day 2, 18:00 unless players repair it sooner.",
-    "Hunt attempts: \"barfight\"",
-    "Hunt travels to bar.",
-    "Hunt travels to village.",
-    "Hunt travels to bar.",
-    "Hunt travels to village.",
-    "Hunt travels to bar.",
-    "Hunt travels to village.",
-    "Hunt travels to bar.",
-    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
-    "Hunt travels to village.",
-    "Hunt travels to bar.",
-    "Hunt travels to village.",
-    "Hunt travels to bar.",
-    "Hunt travels to village.",
-    "The bar does not currently need repairs.",
-    "Hunt attempts: \"repair\"",
-    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
-    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
-    "[CHAIN EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-    "Hunt hangs back. No one steps in before fists start flying.",
-    "[EVENT — BAR] A drunk patron slams his mug down and accuses a traveling merchant of cheating him.",
-    "Hunt travels to bar."
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+    "Hunt attempts: \"defend\"",
+    "Branches snap in the dark. A Goblin Scout emerges from deeper in the forest.\nEnemy HP: 12.",
+    "Hunt waits and watches the world move around them.",
+    "Hunt attempts: \"wait\"",
+    "The forest suddenly goes quiet. You feel something in the air. You can wait, search, or run.",
+    "For a heartbeat, the woods hold their breath.",
+    "Hunt\n\n      <div style=\"border:1px solid #444; padding:12px; margin:12px 0; border-radius:8px; background:#f8f8f8;\">\n        <h3 style=\"margin-top:0;\">Action: Attack,Outcome: Kill,Damage: 12,Goblin Corpses: 2,Reputation: Enforcer,World: Word spreads: you are not to be trusted with stability.</h3>\n        <p style=\"margin:6px 0;\">You win the clash. The woods fall strangely silent.</p>\n      </div>\n    ",
+    "With its dying breath, the goblin blows on a horn and calls for reinforcements.",
+    "Hunt stands over the fallen goblin.\nIntimidation +2.",
+    "Hunt kills the goblin.",
+    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
+    "Hunt: You strike for 12 damage.",
+    "Hunt: You close the distance and attack with force.",
+    "Hunt attempts: \"attack\"",
+    "Hunt: The goblin strikes back, but misses."
   ],
   "locationStates": {
     "village": {
-      "activeEvent": {
-        "id": "village_tavern_gossip",
-        "name": "Tavern Gossip",
-        "chainId": "village_consequence",
-        "phase": 1,
-        "location": "village",
-        "phaseLabel": "gossip",
-        "createdAt": 1776697042340,
-        "expiresInMs": 600000,
-        "text": "The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
-        "involvedNpc": [
-          "Old Villager",
-          "Worried Farmer"
-        ],
-        "tags": [
-          "village",
-          "gossip"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": null,
-        "nextOnFail": null,
-        "nextOnIgnore": null
-      },
-      "recentHistory": [
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Hunt travels to village."
-      ],
+      "activeEvent": null,
+      "recentHistory": [],
       "npcs": [
         "Old Villager",
         "Worried Farmer",
@@ -104,25 +71,14 @@
         "crowdUneasy": false,
         "hunterSavedRumor": false,
         "hunterAbandonedRumor": false,
-        "tavernTroubleRumor": true,
+        "tavernTroubleRumor": false,
         "rebuildingActive": false,
         "rebuildingEndsAtTurn": null
       }
     },
     "bar": {
       "activeEvent": null,
-      "recentHistory": [
-        "The bar repairs are completed ahead of schedule thanks to player help. The doors are open again.",
-        "Hunt helps repair the bar. Repair progress: 6/6.",
-        "Hunt attempts: \"repair\"",
-        "Hunt helps repair the bar. Repair progress: 5/6.",
-        "Hunt attempts: \"repair\"",
-        "Hunt helps repair the bar. Repair progress: 4/6.",
-        "Hunt attempts: \"repair\"",
-        "Hunt helps repair the bar. Repair progress: 3/6.",
-        "Hunt attempts: \"repair\"",
-        "Hunt helps repair the bar. Repair progress: 2/6."
-      ],
+      "recentHistory": [],
       "npcs": [
         "Bartender Rowan",
         "Drunk Patron",
@@ -139,9 +95,7 @@
       },
       "stateFlags": {
         "barDamaged": false,
-        "bartenderHostileTo": [
-          "Hunt"
-        ],
+        "bartenderHostileTo": [],
         "barOnFire": false,
         "thiefActive": false,
         "guardsWatchingBar": false,
@@ -156,40 +110,9 @@
       }
     },
     "street": {
-      "activeEvent": {
-        "id": "street_guard_response",
-        "name": "Guard Response",
-        "chainId": "tavern_trouble",
-        "phase": 3,
-        "location": "street",
-        "phaseLabel": "response",
-        "createdAt": 1776697060741,
-        "expiresInMs": 600000,
-        "text": "Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
-        "involvedNpc": [
-          "Town Guard"
-        ],
-        "tags": [
-          "street",
-          "guard"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnFail": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnIgnore": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        }
-      },
+      "activeEvent": null,
       "recentHistory": [
-        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
-        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble."
+        "Hunt travels to street."
       ],
       "npcs": [
         "Town Guard",
@@ -212,7 +135,18 @@
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
+        "Hunt attempts: \"defend\"",
+        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
+        "Hunt attempts: \"defend\""
+      ],
       "npcs": [
         "Goblin"
       ],
@@ -227,20 +161,22 @@
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
-        "forestDanger": 0,
+        "forestDanger": 2,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 0,
+        "forestStayCounter": 4,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
-        "goblinCorpsesDecayAtTurn": null
+        "goblinCorpsesDecayAtTurn": null,
+        "pendingForestEncounter": false
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
-    "recentViolence": 0,
+    "recentViolence": 2,
     "guardsAlertLevel": 0,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
-  }
+  },
+  "goblinType": "Goblin Scout"
 }

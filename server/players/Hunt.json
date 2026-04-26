@@ -1,26 +1,42 @@
 {
   "name": "Hunt",
-  "location": "bar",
-  "hp": 92,
+  "location": "forest",
+  "hp": 80,
   "maxHp": 100,
   "inventory": [],
   "stats": {
-    "strength": 2,
+    "strength": 3,
     "dexterity": 3,
-    "defense": 1,
+    "defense": 3,
     "presence": 2
   },
   "reputation": {
-    "chaos": 2,
-    "honor": 2,
-    "intimidation": 2,
-    "title": "Unknown Figure"
+    "chaos": 16,
+    "honor": 13,
+    "intimidation": 15,
+    "title": "Enforcer"
   },
   "flags": {
-    "knownTroublemaker": false,
-    "helpedTownsfolk": false,
-    "bartenderBarred": true,
+    "knownTroublemaker": true,
+    "helpedTownsfolk": true,
+    "bartenderBarred": false,
     "blockedFromStreet": false,
     "wantedByGuards": false
-  }
+  },
+  "traits": {
+    "honor": 13,
+    "greed": 0,
+    "fear": 0,
+    "influence": 0,
+    "chaos": 9
+  },
+  "progression": {
+    "actionCounts": {
+      "wait": 4,
+      "attack": 9,
+      "defend": 13
+    }
+  },
+  "title": "Wanderer",
+  "skills": []
 }

@@ -2,6 +2,10 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 
+const { updatePlayerSkills } = require("./src/systems/skillSystem");
+const { updateTraits } = require("./src/systems/traitSystem");
+const { updatePlayerTitle } = require("./src/systems/titleSystem");
+const { applyStatGrowth } = require("./src/systems/statSystem");
 const { createTimeSystem } = require("./src/systems/timeSystem");
 const { createActionResolutionSystem } = require("./src/systems/actionResolutionSystem");
 const { createCombatSystem } = require("./src/systems/combatSystem");
@@ -102,6 +106,33 @@ function requirePlayer(req, res) {
   return playerName;
 }
 
+function ensurePlayerProgression(player) {
+  player.traits = player.traits || {
+    honor: 0,
+    greed: 0,
+    fear: 0,
+    influence: 0,
+    chaos: 0
+  };
+
+  player.progression = player.progression || {
+    actionCounts: {}
+  };
+
+  player.title = player.title || "Wanderer";
+  player.skills = player.skills || [];
+}
+
+function trackAction(player, actionType) {
+  ensurePlayerProgression(player);
+
+  if (!player.progression.actionCounts[actionType]) {
+    player.progression.actionCounts[actionType] = 0;
+  }
+
+  player.progression.actionCounts[actionType] += 1;
+}
+
 function syncTimedWorld(worldState) {
   ensureTimeState(worldState);
   processTimedWorldChanges(worldState);
@@ -126,6 +157,36 @@ function getRecoveryContributionAmount(interpreted) {
     default:
       return 1;
   }
+}
+
+function spawnQueuedForestEncounterIfNeeded(worldState, player) {
+  const forestFlags = worldState.locationStates?.forest?.stateFlags;
+  if (!forestFlags) return;
+  if (player.location !== "forest") return;
+  if (!forestFlags.pendingForestEncounter) return;
+  if (worldState.goblinAlive) return;
+
+  const danger = forestFlags.forestDanger || 0;
+
+  let nextGoblin;
+  if (danger >= 6) {
+    nextGoblin = { type: "Goblin Brute", hp: 24 };
+  } else if (danger >= 4) {
+    nextGoblin = { type: "Goblin Hunter", hp: 20 };
+  } else {
+    nextGoblin = { type: "Goblin Scout", hp: 12 };
+  }
+
+  forestFlags.pendingForestEncounter = false;
+  worldState.goblinAlive = true;
+  worldState.goblinType = nextGoblin.type;
+  worldState.goblinHp = nextGoblin.hp;
+
+  addWorldEvent(
+    worldState,
+    `Branches snap in the dark. A ${nextGoblin.type} emerges from deeper in the forest.\nEnemy HP: ${nextGoblin.hp}.`,
+    "forest"
+  );
 }
 
 /* =========================
@@ -166,6 +227,7 @@ function shouldSpawnForestEscalation(worldState, reason) {
   if (worldState.goblinAlive) return false;
   if (forestFlags.goblinReinforcementsIncoming) return false;
   if (forestFlags.reinforcementAmbushPending) return false;
+  if (forestFlags.pendingForestEncounter) return false;
   if (forestFlags.forestSpawnCooldown > 0) return false;
   if (forestFlags.forestStayCounter < 2) return false;
 
@@ -201,6 +263,7 @@ function finishForestEncounter(worldState, options = {}) {
   if (options.clearReinforcementPending) {
     forestFlags.reinforcementAmbushPending = false;
     forestFlags.goblinReinforcementsIncoming = false;
+    forestFlags.pendingForestEncounter = false;
   }
 
   if (options.cooldownTurns !== undefined) {
@@ -311,13 +374,13 @@ app.get("/", (req, res) => {
   if (!playerName) return;
 
   const player = loadPlayer(playerName);
-  // === STEP 1: Ensure progression fields exist ===
-
-
+  ensurePlayerProgression(player);
+  updatePlayerSkills(player);
 
   const worldState = loadWorldState();
   const location = world[player.location];
-const activeEvent = worldState.locationStates[player.location]?.activeEvent;
+  const activeEvent = worldState.locationStates[player.location]?.activeEvent;
+
   syncTimedWorld(worldState);
 
   forgiveBartenderIfEarned(worldState, player);
@@ -336,7 +399,9 @@ const activeEvent = worldState.locationStates[player.location]?.activeEvent;
     .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
     .join("");
 
-res.send(`
+  const reputationReaction = getReputationReaction(player.reputation);
+
+  res.send(`
   <h1>${player.name.toUpperCase()} — ${player.location.toUpperCase()}</h1>
 
   <div style="padding:10px; border:1px solid #bbb; border-radius:8px; background:#f5f5f5; margin-bottom:16px;">
@@ -346,17 +411,23 @@ res.send(`
   <p>${location.description}</p>
   <p><strong>HP:</strong> ${player.hp} / ${player.maxHp}</p>
   <p><strong>Stats:</strong> STR ${player.stats.strength}, DEX ${player.stats.dexterity}, DEF ${player.stats.defense}, PRE ${player.stats.presence}</p>
-  <p><strong>Reputation:</strong> ${player.reputation.title} | Honor ${player.reputation.honor} | Chaos ${player.reputation.chaos} | Intimidation ${player.reputation.intimidation}</p>
+  <p><strong>Title:</strong> ${player.title}</p>
+  <p><strong>Skills:</strong> ${player.skills.length > 0 ? player.skills.join(", ") : "None"}</p>
+  <p><strong>Traits:</strong> Honor ${player.traits.honor} | Greed ${player.traits.greed} | Fear ${player.traits.fear} | Influence ${player.traits.influence} | Chaos ${player.traits.chaos}</p>
+  <p><strong>Reputation:</strong> ${player.reputation.title}</p>
+  ${reputationReaction ? `<p><em>${reputationReaction}</em></p>` : ""}
   <p><strong>Guard Alert Level:</strong> ${worldState.globalState.guardsAlertLevel}</p>
 
-    ${activeEvent ? `
+  ${activeEvent ? `
     <div style="margin:12px 0; padding:12px; border:1px solid #c98; border-radius:8px; background:#fff7f2;">
       <h3 style="margin-top:0;">Current Event</h3>
       <p style="margin:6px 0;"><strong>${activeEvent.title || "Something is happening"}</strong></p>
       <p style="margin:6px 0; white-space:pre-wrap;">${activeEvent.text}</p>
     </div>
   ` : ""}
-${!activeEvent ? getLocationExtra(player, worldState) : ""}
+
+  ${!activeEvent ? getLocationExtra(player, worldState) : ""}
+
   <h3>Action</h3>
   <form method="POST" action="/action?player=${encodeURIComponent(playerName)}" style="margin-bottom:20px;">
     <input
@@ -401,9 +472,8 @@ app.post("/action", (req, res) => {
   if (!playerName) return res.redirect("/");
 
   const player = loadPlayer(playerName);
-  // === STEP 1: Ensure progression fields exist ===
-
-
+  ensurePlayerProgression(player);
+  updatePlayerSkills(player);
 
   const worldState = loadWorldState();
   const rawAction = req.body.action || "";
@@ -503,156 +573,197 @@ NEW EVENT LOOP
     advanceAndSync(worldState, 1, "run", player.location);
 
   } else if (interpreted.type === "search") {
-    if (player.location !== "forest") {
-      addWorldEvent(worldState, `${player.name} searches around, but finds nothing useful.`, player.location);
-    } else if (!worldState.forestPotionFound) {
-      player.inventory.push("Health Potion");
-      worldState.forestPotionFound = true;
-      addWorldEvent(worldState, `${player.name} searches the forest and finds a Health Potion.`, player.location);
-    } else {
-      addWorldEvent(worldState, `${player.name} searches the forest, but finds nothing new.`, player.location);
-    }
+  trackAction(player, "search");
+  updateTraits(player, { greed: 1 });
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
 
-    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-    advanceAndSync(worldState, 1, "search", player.location);
+  if (player.location !== "forest") {
+    addWorldEvent(worldState, `${player.name} searches around, but finds nothing useful.`, player.location);
+  } else if (!worldState.forestPotionFound) {
+    player.inventory.push("Health Potion");
+    worldState.forestPotionFound = true;
+    addWorldEvent(worldState, `${player.name} searches the forest and finds a Health Potion.`, player.location);
+  } else {
+    addWorldEvent(worldState, `${player.name} searches the forest, but finds nothing new.`, player.location);
+  }
+
+  maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+  spawnQueuedForestEncounterIfNeeded(worldState, player);
+  advanceAndSync(worldState, 1, "search", player.location);
 
   } else if (interpreted.type === "drink") {
-    if (player.location !== "bar") {
-      addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`, player.location);
-    } else {
-      const healAmount = 10;
-      player.hp = Math.min(player.maxHp, player.hp + healAmount);
-      updateReputation(player, { honor: 1 });
+  trackAction(player, "drink");
+  updateTraits(player, { chaos: 1, honor: -1 });
+  applyStatGrowth(player, "drink");
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
 
-      addWorldEvent(
-        worldState,
-        `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.`,
-        player.location
-      );
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`, player.location);
+  } else {
+    const healAmount = 10;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+    updateReputation(player, { honor: 1 });
 
-      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+    addWorldEvent(
+      worldState,
+      `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.`,
+      player.location
+    );
+
+    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+  }
+
+  advanceAndSync(worldState, 1, "drink", player.location);
+
+ } else if (interpreted.type === "eat") {
+  trackAction(player, "eat");
+  updateTraits(player, { honor: 1 });
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
+
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`, player.location);
+  } else {
+    const healAmount = 12;
+    player.hp = Math.min(player.maxHp, player.hp + healAmount);
+    updateReputation(player, { honor: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} eats a warm meal.\nRecovers ${healAmount} HP.\nHonor +1.`,
+      player.location
+    );
+
+    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+  }
+
+  advanceAndSync(worldState, 1, "eat", player.location);
+
+ } else if (interpreted.type === "threaten") {
+  trackAction(player, "threaten");
+  updateTraits(player, { influence: 1, chaos: 1, honor: -1 });
+  applyStatGrowth(player, "threaten");
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
+
+  if (player.location === "forest") {
+    updateReputation(player, { intimidation: 1 });
+
+    addWorldEvent(
+      worldState,
+      `${player.name} lets out a terrifying threat into the forest.\nIntimidation +1.`,
+      player.location
+    );
+  } else if (player.location === "bar") {
+    updateReputation(player, { intimidation: 1, chaos: 1 });
+    markBartenderHostile(worldState, player.name);
+    player.flags.bartenderBarred = true;
+
+    addWorldEvent(
+      worldState,
+      `${player.name} makes a chilling threat in the bar.\nPeople go silent.\nIntimidation +1. Chaos +1.\nBartender Rowan will remember this.`,
+      player.location
+    );
+
+    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+  } else {
+    addWorldEvent(
+      worldState,
+      `${player.name} tries to act intimidating, but nothing really happens.`,
+      player.location
+    );
+  }
+
+  advanceAndSync(worldState, 1, "threaten", player.location);
+
+} else if (interpreted.type === "barfight") {
+  trackAction(player, "barfight");
+  updateTraits(player, { chaos: 2, honor: -1 });
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
+
+  if (player.location !== "bar") {
+    addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
+  } else {
+    const damage = 8;
+    player.hp = Math.max(0, player.hp - damage);
+    updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
+
+    worldState.locationStates.bar.stateFlags.barDamaged = true;
+    worldState.locationStates.bar.stateFlags.barRepairing = true;
+    worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
+    scheduleBarRepair(worldState, 12);
+    markBartenderHostile(worldState, player.name);
+    player.flags.bartenderBarred = true;
+
+    addWorldEvent(
+      worldState,
+      `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.`,
+      player.location
+    );
+
+    if (!worldState.locationStates.bar.activeEvent) {
+      worldState.locationStates.bar.activeEvent = createEventTemplate("bar_brawl", "bar");
+      addWorldEvent(worldState, `[EVENT — BAR] ${worldState.locationStates.bar.activeEvent.text}`, "bar");
     }
+  }
 
-    advanceAndSync(worldState, 1, "drink", player.location);
+  advanceAndSync(worldState, 1, "barfight", player.location);
 
-  } else if (interpreted.type === "eat") {
-    if (player.location !== "bar") {
-      addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`, player.location);
-    } else {
-      const healAmount = 12;
-      player.hp = Math.min(player.maxHp, player.hp + healAmount);
-      updateReputation(player, { honor: 1 });
+ } else if (interpreted.type === "repair") {
+  trackAction(player, "repair");
+  updateTraits(player, { honor: 1, chaos: -1 });
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
 
-      addWorldEvent(
-        worldState,
-        `${player.name} eats a warm meal.\nRecovers ${healAmount} HP.\nHonor +1.`,
-        player.location
-      );
+  const targetLocation = interpreted.target || player.location;
+  const contributionAmount = getRecoveryContributionAmount(interpreted);
 
-      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-    }
+  const repairResult = contributeToRecovery(worldState, targetLocation, {
+    actor: player.name,
+    amount: contributionAmount,
+    type: interpreted.recoveryAction || "labor"
+  });
 
-    advanceAndSync(worldState, 1, "eat", player.location);
+  addWorldEvent(worldState, repairResult.text, player.location);
 
-  } else if (interpreted.type === "threaten") {
-    if (player.location === "forest") {
-      updateReputation(player, { intimidation: 1 });
+  if (repairResult.success) {
+    updateReputation(player, { honor: 1 });
+  }
 
-      addWorldEvent(
-        worldState,
-        `${player.name} lets out a terrifying threat into the forest.\nIntimidation +1.`,
-        player.location
-      );
-    } else if (player.location === "bar") {
-      updateReputation(player, { intimidation: 1, chaos: 1 });
-      markBartenderHostile(worldState, player.name);
-      player.flags.bartenderBarred = true;
-
-      addWorldEvent(
-        worldState,
-        `${player.name} makes a chilling threat in the bar.\nPeople go silent.\nIntimidation +1. Chaos +1.\nBartender Rowan will remember this.`,
-        player.location
-      );
-
-      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-    } else {
-      addWorldEvent(
-        worldState,
-        `${player.name} tries to act intimidating, but nothing really happens.`,
-        player.location
-      );
-    }
-
-    advanceAndSync(worldState, 1, "threaten", player.location);
-
-  } else if (interpreted.type === "barfight") {
-    if (player.location !== "bar") {
-      addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
-    } else {
-      const damage = 8;
-      player.hp = Math.max(0, player.hp - damage);
-      updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
-
-      worldState.locationStates.bar.stateFlags.barDamaged = true;
-      worldState.locationStates.bar.stateFlags.barRepairing = true;
-      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
-      scheduleBarRepair(worldState, 12);
-      markBartenderHostile(worldState, player.name);
-      player.flags.bartenderBarred = true;
-
-      addWorldEvent(
-        worldState,
-        `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.`,
-        player.location
-      );
-
-      if (!worldState.locationStates.bar.activeEvent) {
-        worldState.locationStates.bar.activeEvent = createEventTemplate("bar_brawl", "bar");
-        addWorldEvent(worldState, `[EVENT — BAR] ${worldState.locationStates.bar.activeEvent.text}`, "bar");
-      }
-    }
-
-    advanceAndSync(worldState, 1, "barfight", player.location);
-
-  } else if (interpreted.type === "repair") {
-    const targetLocation = interpreted.target || player.location;
-    const contributionAmount = getRecoveryContributionAmount(interpreted);
-
-    const repairResult = contributeToRecovery(worldState, targetLocation, {
-      actor: player.name,
-      amount: contributionAmount,
-      type: interpreted.recoveryAction || "labor"
-    });
-
-    addWorldEvent(worldState, repairResult.text, player.location);
-
-    if (repairResult.success) {
-      updateReputation(player, { honor: 1 });
-    }
-
-    advanceAndSync(worldState, 1, "repair", player.location);
+  advanceAndSync(worldState, 1, "repair", player.location);
 
   } else if (interpreted.type === "inspect-recovery") {
-    const targetLocation = interpreted.target || player.location;
-    const actions = getLocationRecoveryActions(worldState, targetLocation);
+  trackAction(player, "inspect-recovery");
+  updatePlayerTitle(player);
+  updatePlayerSkills(player);
 
-    if (actions.length === 0) {
-      addWorldEvent(
-        worldState,
-        `${player.name} inspects the area, but there is no active recovery work here.`,
-        player.location
-      );
-    } else {
-      addWorldEvent(
-        worldState,
-        `${player.name} inspects the recovery effort.\nAvailable actions: ${actions.join(", ")}.`,
-        player.location
-      );
-    }
+  const targetLocation = interpreted.target || player.location;
+  const actions = getLocationRecoveryActions(worldState, targetLocation);
 
-    advanceAndSync(worldState, 1, "inspect-recovery", player.location);
+  if (actions.length === 0) {
+    addWorldEvent(
+      worldState,
+      `${player.name} inspects the area, but there is no active recovery work here.`,
+      player.location
+    );
+  } else {
+    addWorldEvent(
+      worldState,
+      `${player.name} inspects the recovery effort.\nAvailable actions: ${actions.join(", ")}.`,
+      player.location
+    );
+  }
 
+  advanceAndSync(worldState, 1, "inspect-recovery", player.location);
+  
   } else if (interpreted.type === "wait") {
+    trackAction(player, "wait");
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
+
     addWorldEvent(
       worldState,
       `${player.name} waits and watches the world move around them.`,
@@ -660,6 +771,7 @@ NEW EVENT LOOP
     );
 
     maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+    spawnQueuedForestEncounterIfNeeded(worldState, player);
     advanceAndSync(worldState, 1, "wait", player.location);
 
   } else {
@@ -678,13 +790,13 @@ app.get("/move/:place", (req, res) => {
   if (!playerName) return res.redirect("/");
 
   const player = loadPlayer(playerName);
-  // === STEP 1: Ensure progression fields exist ===
-
+  ensurePlayerProgression(player);
+  updatePlayerSkills(player);
 
   const worldState = loadWorldState();
   const destination = req.params.place;
   const location = world[player.location];
-const activeEvent = worldState.locationStates[player.location]?.activeEvent;
+
   syncTimedWorld(worldState);
 
   forgiveBartenderIfEarned(worldState, player);
@@ -721,10 +833,8 @@ app.get("/rest", (req, res) => {
   if (!playerName) return res.redirect("/");
 
   const player = loadPlayer(playerName);
-  // === STEP 1: Ensure progression fields exist ===
-
-
-
+  ensurePlayerProgression(player);
+  updatePlayerSkills(player);
 
   const worldState = loadWorldState();
 
@@ -751,8 +861,8 @@ app.get("/use-item/:index", (req, res) => {
   if (!playerName) return res.redirect("/");
 
   const player = loadPlayer(playerName);
-  // === STEP 1: Ensure progression fields exist ===
-
+  ensurePlayerProgression(player);
+  updatePlayerSkills(player);
 
   const worldState = loadWorldState();
   const index = parseInt(req.params.index, 10);
