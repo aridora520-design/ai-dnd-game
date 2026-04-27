@@ -1,59 +1,70 @@
 {
   "time": {
-    "day": 2,
-    "hour": 14,
-    "turn": 30
+    "day": 3,
+    "hour": 10,
+    "turn": 50
   },
   "goblinAlive": true,
-  "goblinHp": 12,
-  "goblinCorpses": 2,
-  "forestPotionFound": false,
+  "goblinHp": 40,
+  "goblinCorpses": 0,
+  "forestPotionFound": true,
   "eventLog": [
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-    "Hunt attempts: \"defend\"",
-    "Branches snap in the dark. A Goblin Scout emerges from deeper in the forest.\nEnemy HP: 12.",
-    "Hunt waits and watches the world move around them.",
-    "Hunt attempts: \"wait\"",
-    "The forest suddenly goes quiet. You feel something in the air. You can wait, search, or run.",
-    "For a heartbeat, the woods hold their breath.",
-    "Hunt\n\n      <div style=\"border:1px solid #444; padding:12px; margin:12px 0; border-radius:8px; background:#f8f8f8;\">\n        <h3 style=\"margin-top:0;\">Action: Attack,Outcome: Kill,Damage: 12,Goblin Corpses: 2,Reputation: Enforcer,World: Word spreads: you are not to be trusted with stability.</h3>\n        <p style=\"margin:6px 0;\">You win the clash. The woods fall strangely silent.</p>\n      </div>\n    ",
-    "With its dying breath, the goblin blows on a horn and calls for reinforcements.",
-    "Hunt stands over the fallen goblin.\nIntimidation +2.",
-    "Hunt kills the goblin.",
-    "Hunt's brutal strike shakes the battlefield.\nIntimidation +1.",
-    "Hunt: You strike for 12 damage.",
-    "Hunt: You close the distance and attack with force.",
-    "Hunt attempts: \"attack\"",
-    "Hunt: The goblin strikes back, but misses."
+    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 1 stone.\nRebuild progress added: 6.\nRebuild progress for bar: 28/100.",
+    "Hunt attempts: \"repair bar\"",
+    "Hunt travels to village.",
+    "Hunt travels to street.",
+    "Hunt searches the forest and gathers 1 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt travels to forest.",
+    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+    "The guards interpret the silence as guilt and grow even more suspicious.",
+    "Hunt travels to street.",
+    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 2 wood, 1 stone.\nRebuild progress added: 8.\nRebuild progress for bar: 22/100.",
+    "Hunt attempts: \"rebuild bar\"",
+    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
+    "Hunt travels to village.",
+    "Hunt travels to street.",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt travels to forest.",
+    "Hunt travels to street.",
+    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 0 stone.\nRebuild progress added: 2.\nRebuild progress for bar: 14/100.",
+    "Hunt attempts: \"rebuild bar\"",
+    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
+    "Hunt takes in the village mood: The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
+    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+    "Hunt travels to village.",
+    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+    "Hunt travels to street.",
+    "Hunt wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.",
+    "Hunt attempts: \"repair bar\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt travels to forest.",
+    "The guards interpret the silence as guilt and grow even more suspicious.",
+    "Hunt travels to street.",
+    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 4 wood, 1 stone.\nRebuild progress added: 12.\nRebuild progress for bar: 12/100.",
+    "Hunt attempts: \"repair bar\"",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"repair bar\"",
+    "The Dungeon Master does not understand Hunt's action yet."
   ],
   "locationStates": {
     "village": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 1 stone.\nRebuild progress added: 6.\nRebuild progress for bar: 28/100.",
+        "Hunt attempts: \"repair bar\"",
+        "Hunt travels to village.",
+        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 2 wood, 1 stone.\nRebuild progress added: 8.\nRebuild progress for bar: 22/100.",
+        "Hunt attempts: \"rebuild bar\"",
+        "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
+        "Hunt travels to village.",
+        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 0 stone.\nRebuild progress added: 2.\nRebuild progress for bar: 14/100.",
+        "Hunt attempts: \"rebuild bar\"",
+        "Hunt approaches the bar, but word has already reached Rowan. The door stays closed."
+      ],
       "npcs": [
         "Old Villager",
         "Worried Farmer",
@@ -78,7 +89,18 @@
     },
     "bar": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+        "The old bar is gone. The only options now are to clear the ruins or rebuild something new.",
+        "The bar collapses into ruins. The old bar is gone.",
+        "Hunt reacts awkwardly, but the fight only grows louder.",
+        "The bar takes 15 damage. HP: 15/100. Status: critical.",
+        "Hunt reacts awkwardly, but the fight only grows louder.",
+        "The bar takes 15 damage. HP: 30/100. Status: critical.",
+        "Hunt reacts awkwardly, but the fight only grows louder.",
+        "The bar takes 15 damage. HP: 45/100. Status: damaged.",
+        "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos."
+      ],
       "npcs": [
         "Bartender Rowan",
         "Drunk Patron",
@@ -95,7 +117,9 @@
       },
       "stateFlags": {
         "barDamaged": false,
-        "bartenderHostileTo": [],
+        "bartenderHostileTo": [
+          "Hunt"
+        ],
         "barOnFire": false,
         "thiefActive": false,
         "guardsWatchingBar": false,
@@ -107,11 +131,60 @@
         "barAutoRepairAtTurn": null,
         "barRepairProgress": 0,
         "barRepairNeeded": 0
+      },
+      "hp": 0,
+      "maxHp": 100,
+      "form": "bar_ruins",
+      "status": "destroyed",
+      "rebuildProject": {
+        "active": true,
+        "progress": 28,
+        "required": 100,
+        "type": "rebuild_bar"
       }
     },
     "street": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "street_guard_stop",
+        "name": "Guard Confrontation",
+        "chainId": "guard_pressure",
+        "phase": 1,
+        "location": "street",
+        "phaseLabel": "stop",
+        "createdAt": 1777262785424,
+        "expiresInMs": 600000,
+        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
+        "involvedNpc": [
+          "Town Guard"
+        ],
+        "tags": [
+          "social",
+          "street"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        }
+      },
       "recentHistory": [
+        "Hunt travels to street.",
+        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+        "The guards interpret the silence as guilt and grow even more suspicious.",
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+        "Hunt travels to street.",
+        "The guards interpret the silence as guilt and grow even more suspicious.",
         "Hunt travels to street."
       ],
       "npcs": [
@@ -129,23 +202,23 @@
       },
       "stateFlags": {
         "cartCrashed": false,
-        "guardsAlert": false,
+        "guardsAlert": true,
         "blockedUntilTurn": null
       }
     },
     "forest": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: You brace perfectly and turn the attack aside.\nHonor +1.",
-        "Hunt attempts: \"defend\"",
-        "Hunt: You block most of it, but still lose 3 HP.\nHonor +1.",
-        "Hunt attempts: \"defend\""
+        "Hunt searches the forest and gathers 1 wood and 1 stone.",
+        "Hunt attempts: \"search\"",
+        "Hunt travels to forest.",
+        "Hunt searches the forest and gathers 2 wood and 1 stone.",
+        "Hunt attempts: \"search\"",
+        "Hunt travels to forest.",
+        "Hunt wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.",
+        "Hunt attempts: \"repair bar\"",
+        "Hunt searches the forest and gathers 1 wood.",
+        "Hunt attempts: \"search\""
       ],
       "npcs": [
         "Goblin"
@@ -161,22 +234,20 @@
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
-        "forestDanger": 2,
+        "forestDanger": 0,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 4,
+        "forestStayCounter": 0,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
-        "goblinCorpsesDecayAtTurn": null,
-        "pendingForestEncounter": false
+        "goblinCorpsesDecayAtTurn": null
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
-    "recentViolence": 2,
-    "guardsAlertLevel": 0,
+    "recentViolence": 0,
+    "guardsAlertLevel": 3,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
-  },
-  "goblinType": "Goblin Scout"
+  }
 }

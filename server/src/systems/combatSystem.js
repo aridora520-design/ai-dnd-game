@@ -382,6 +382,16 @@ function createCombatSystem({
       if (worldState.goblinHp <= 0) {
         worldState.goblinAlive = false;
         worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
+        player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
+
+const goldFound = 2 + rollDie(4);
+player.resources.gold += goldFound;
+
+addWorldEvent(
+  worldState,
+  `${player.name} searches the fallen goblin and finds ${goldFound} gold.`,
+  player.location
+);
         updateReputation(player, { chaos: 3, intimidation: 2 });
 
         addWorldEvent(worldState, `${player.name} kills the goblin.`, player.location);
@@ -462,6 +472,16 @@ function createCombatSystem({
       if (worldState.goblinHp <= 0) {
         worldState.goblinAlive = false;
         worldState.goblinCorpses = (worldState.goblinCorpses || 0) + 1;
+        player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
+
+const goldFound = 2 + rollDie(4);
+player.resources.gold += goldFound;
+
+addWorldEvent(
+  worldState,
+  `${player.name} searches the fallen goblin and finds ${goldFound} gold.`,
+  player.location
+);
         updateReputation(player, { chaos: 3, intimidation: 2 });
 
         addWorldEvent(worldState, `${player.name} kills the goblin.`, player.location);

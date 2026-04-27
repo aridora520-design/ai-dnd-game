@@ -1,40 +1,47 @@
 {
   "name": "Hunt",
-  "location": "forest",
-  "hp": 80,
+  "location": "village",
+  "hp": 92,
   "maxHp": 100,
-  "inventory": [],
+  "inventory": [
+    "Health Potion"
+  ],
   "stats": {
-    "strength": 3,
+    "strength": 2,
     "dexterity": 3,
-    "defense": 3,
+    "defense": 1,
     "presence": 2
   },
   "reputation": {
-    "chaos": 16,
-    "honor": 13,
-    "intimidation": 15,
-    "title": "Enforcer"
+    "chaos": 2,
+    "honor": 5,
+    "intimidation": 2,
+    "title": "Trusted Soul"
   },
   "flags": {
-    "knownTroublemaker": true,
-    "helpedTownsfolk": true,
-    "bartenderBarred": false,
+    "knownTroublemaker": false,
+    "helpedTownsfolk": false,
+    "bartenderBarred": true,
     "blockedFromStreet": false,
     "wantedByGuards": false
   },
+  "resources": {
+    "gold": 0,
+    "wood": 0,
+    "stone": 0
+  },
   "traits": {
-    "honor": 13,
-    "greed": 0,
+    "honor": 7,
+    "greed": 6,
     "fear": 0,
     "influence": 0,
-    "chaos": 9
+    "chaos": 0
   },
   "progression": {
     "actionCounts": {
-      "wait": 4,
-      "attack": 9,
-      "defend": 13
+      "search": 6,
+      "barfight": 1,
+      "repair": 7
     }
   },
   "title": "Wanderer",
