@@ -223,13 +223,196 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
 
     return `You notice: ${locationState.npcs.join(", ")}.`;
   }
+     function renderGamePage({
+    player,
+    playerName,
+    worldState,
+    location,
+    activeEvent,
+    links,
+    eventsHtml,
+    reputationReaction,
+    formatWorldTime,
+    getReputationReaction,
+    mode = "live",
+    tutorialBanner = ""
+  }) {
+    const isTutorial = mode === "tutorial";
+    const barState = worldState.locationStates?.bar || {};
+    const localStatusHtml = !activeEvent ? getLocationExtra(player, worldState) : "";
 
-  return {
+    return `
+      <div style="max-width:1400px; margin:0 auto; padding:16px; font-family:Georgia, serif;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #222; padding-bottom:10px; margin-bottom:14px;">
+          <div>
+            <h1 style="margin:0;">${player.name.toUpperCase()}</h1>
+            <p style="margin:4px 0 0 0;"><strong>Location:</strong> ${player.location.toUpperCase()}</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="margin:0;"><strong>${isTutorial ? "Dream Time" : "World Time"}:</strong> ${formatWorldTime(worldState)}</p>
+            <p style="margin:4px 0 0 0;"><strong>HP:</strong> ${player.hp}/${player.maxHp}</p>
+          </div>
+        </div>
+
+        ${tutorialBanner}
+
+        <div style="
+          display:grid;
+          grid-template-columns: 1fr 2fr 1fr;
+          gap:16px;
+          align-items:start;
+        ">
+
+          <!-- LEFT COLUMN -->
+          <aside>
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">Move</h3>
+              ${links || "<p>No exits.</p>"}
+            </section>
+
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">Other Players</h3>
+              ${isTutorial ? `<p>This is an old memory. No other real players are here.</p>` : getOtherPlayersHtml(player)}
+            </section>
+
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">Inventory & Resources</h3>
+${getInventoryHtml(player, playerName)}
+<hr>
+<p>
+  <strong>Gold:</strong> ${player.resources?.gold || 0}<br>
+  <strong>Wood:</strong> ${player.resources?.wood || 0}<br>
+  <strong>Stone:</strong> ${player.resources?.stone || 0}
+</p>
+            </section>
+
+            ${
+              !isTutorial || playerName === "Hunt"
+                ? `
+                  <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7;">
+                    <h3 style="margin-top:0;">World Controls</h3>
+                    ${!isTutorial ? `<a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a><br>` : ""}
+                    <a href="/reset-world?player=${encodeURIComponent(playerName)}" onclick="return confirm('Reset the whole world?')">Reset World</a>
+                  </section>
+                `
+                : ""
+            }
+          </aside>
+
+          <!-- CENTER COLUMN -->
+          <main>
+            <section style="padding:14px; border:1px solid #c98; border-radius:10px; background:#fff7f2; margin-bottom:14px;">
+              <h2 style="margin-top:0;">${activeEvent ? "Current Event" : "Scene"}</h2>
+              ${
+                activeEvent
+                  ? `
+                    <h3 style="margin-bottom:6px;">${activeEvent.title || "Something is happening"}</h3>
+                    <p style="white-space:pre-wrap; line-height:1.45;">${activeEvent.text}</p>
+                  `
+                  : `
+                    <p style="line-height:1.45;">${location.description}</p>
+                    ${localStatusHtml}
+                  `
+              }
+            </section>
+
+            <section style="padding:14px; border:1px solid #999; border-radius:10px; background:#fafafa; margin-bottom:14px;">
+              <h2 style="margin-top:0;">What do you do?</h2>
+              <form method="POST" action="/action?player=${encodeURIComponent(playerName)}">
+                <input
+                  type="text"
+                  name="action"
+                  placeholder="Type your action..."
+                  autocomplete="off"
+                  autofocus
+                  style="padding:12px; width:70%; max-width:620px; font-size:16px;"
+                />
+                <button type="submit" style="padding:12px 18px; font-size:16px; margin-left:8px;">
+                  Act
+                </button>
+              </form>
+              <p style="color:gray; margin-bottom:0;">
+                Try: look, help, attack goblin, defend, run, search, drink, eat, threaten, repair
+              </p>
+            </section>
+
+            <section style="padding:14px; border:1px solid #bbb; border-radius:10px; background:#fff;">
+              <h2 style="margin-top:0;">${isTutorial ? "Dream Events" : "Shared World Events"}</h2>
+              <ul style="
+                padding-left:22px;
+                max-height:320px;
+                overflow-y:auto;
+                border:1px solid #ddd;
+                padding:10px 10px 10px 28px;
+                border-radius:8px;
+                background:#fafafa;
+              ">
+                ${eventsHtml || "<li>No events yet.</li>"}
+              </ul>
+            </section>
+          </main>
+
+          <!-- RIGHT COLUMN -->
+          <aside>
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">Character</h3>
+              <p><strong>Title:</strong> ${player.title}</p>
+              <p><strong>HP:</strong> ${player.hp}/${player.maxHp}</p>
+              <p><strong>Stats:</strong><br>
+                STR ${player.stats.strength}<br>
+                DEX ${player.stats.dexterity}<br>
+                DEF ${player.stats.defense}<br>
+                PRE ${player.stats.presence}
+              </p>
+              <p><strong>Skills:</strong> ${player.skills.length > 0 ? player.skills.join(", ") : "None"}</p>
+              <p><strong>Reputation:</strong> ${player.reputation?.title || "Unknown"}</p>
+              ${reputationReaction ? `<p><em>${reputationReaction}</em></p>` : ""}
+            </section>
+
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">Traits</h3>
+              <p>
+                Honor ${player.traits.honor}<br>
+                Greed ${player.traits.greed}<br>
+                Fear ${player.traits.fear}<br>
+                Influence ${player.traits.influence}<br>
+                Chaos ${player.traits.chaos}
+              </p>
+            </section>
+
+            <section style="padding:12px; border:1px solid #aaa; border-radius:10px; background:#f7f7f7; margin-bottom:12px;">
+              <h3 style="margin-top:0;">World Status</h3>
+              <p><strong>Bar:</strong> ${barState.status || "unknown"}<br>
+              HP ${barState.hp ?? "?"}/${barState.maxHp ?? "?"}</p>
+              <p><strong>Guard Alert:</strong> ${worldState.globalState?.guardsAlertLevel || 0}</p>
+
+              ${
+                barState.status === "destroyed"
+                  ? `
+                    <div style="padding:8px; border:1px solid #b66; border-radius:8px; background:#fff1f1;">
+                      <strong>${isTutorial ? "Dream Bar Destroyed" : "Bar Rebuild Required"}</strong>
+                      <p style="margin-bottom:0;">${isTutorial ? "In this memory, the old tavern has burned." : "Gather materials and type rebuild bar."}</p>
+                    </div>
+                  `
+                  : ""
+              }
+            </section>
+
+          
+          </aside>
+
+        </div>
+      </div>
+    `;
+  }
+    return {
     buildResultBlock,
     buildLookDescription,
     getInventoryHtml,
     getOtherPlayersHtml,
-    getLocationExtra
+    getLocationExtra,
+    renderGamePage
   };
 }
 

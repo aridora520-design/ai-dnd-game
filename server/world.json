@@ -1,69 +1,34 @@
 {
   "time": {
-    "day": 3,
-    "hour": 10,
-    "turn": 50
+    "day": 1,
+    "hour": 17,
+    "turn": 9
   },
   "goblinAlive": true,
   "goblinHp": 40,
   "goblinCorpses": 0,
-  "forestPotionFound": true,
+  "forestPotionFound": false,
   "eventLog": [
-    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 1 stone.\nRebuild progress added: 6.\nRebuild progress for bar: 28/100.",
-    "Hunt attempts: \"repair bar\"",
-    "Hunt travels to village.",
+    "Hunt says into the empty street: \"hi\"",
+    "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
+    "Hunt stalls while the guard studies them.",
     "Hunt travels to street.",
-    "Hunt searches the forest and gathers 1 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt travels to forest.",
-    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-    "The guards interpret the silence as guilt and grow even more suspicious.",
-    "Hunt travels to street.",
-    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 2 wood, 1 stone.\nRebuild progress added: 8.\nRebuild progress for bar: 22/100.",
-    "Hunt attempts: \"rebuild bar\"",
-    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
-    "Hunt travels to village.",
-    "Hunt travels to street.",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt travels to forest.",
-    "Hunt travels to street.",
-    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 0 stone.\nRebuild progress added: 2.\nRebuild progress for bar: 14/100.",
-    "Hunt attempts: \"rebuild bar\"",
-    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
-    "Hunt takes in the village mood: The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
-    "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
-    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
     "Hunt travels to village.",
     "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
     "Hunt travels to street.",
-    "Hunt wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.",
-    "Hunt attempts: \"repair bar\"",
-    "Hunt searches the forest and gathers 1 wood.",
-    "Hunt attempts: \"search\"",
     "Hunt travels to forest.",
-    "The guards interpret the silence as guilt and grow even more suspicious.",
     "Hunt travels to street.",
-    "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 4 wood, 1 stone.\nRebuild progress added: 12.\nRebuild progress for bar: 12/100.",
-    "Hunt attempts: \"repair bar\"",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"repair bar\"",
-    "The Dungeon Master does not understand Hunt's action yet."
+    "Hunt travels to village.",
+    "Hunt travels to village.",
+    "The world begins. The village waits in silence."
   ],
   "locationStates": {
     "village": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 1 stone.\nRebuild progress added: 6.\nRebuild progress for bar: 28/100.",
-        "Hunt attempts: \"repair bar\"",
         "Hunt travels to village.",
-        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 2 wood, 1 stone.\nRebuild progress added: 8.\nRebuild progress for bar: 22/100.",
-        "Hunt attempts: \"rebuild bar\"",
-        "Hunt approaches the bar, but word has already reached Rowan. The door stays closed.",
         "Hunt travels to village.",
-        "Hunt pours everything they have into rebuilding the bar.\nUsed: 0 gold, 1 wood, 0 stone.\nRebuild progress added: 2.\nRebuild progress for bar: 14/100.",
-        "Hunt attempts: \"rebuild bar\"",
-        "Hunt approaches the bar, but word has already reached Rowan. The door stays closed."
+        "Hunt travels to village."
       ],
       "npcs": [
         "Old Villager",
@@ -89,18 +54,7 @@
     },
     "bar": {
       "activeEvent": null,
-      "recentHistory": [
-        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
-        "The old bar is gone. The only options now are to clear the ruins or rebuild something new.",
-        "The bar collapses into ruins. The old bar is gone.",
-        "Hunt reacts awkwardly, but the fight only grows louder.",
-        "The bar takes 15 damage. HP: 15/100. Status: critical.",
-        "Hunt reacts awkwardly, but the fight only grows louder.",
-        "The bar takes 15 damage. HP: 30/100. Status: critical.",
-        "Hunt reacts awkwardly, but the fight only grows louder.",
-        "The bar takes 15 damage. HP: 45/100. Status: damaged.",
-        "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos."
-      ],
+      "recentHistory": [],
       "npcs": [
         "Bartender Rowan",
         "Drunk Patron",
@@ -117,9 +71,7 @@
       },
       "stateFlags": {
         "barDamaged": false,
-        "bartenderHostileTo": [
-          "Hunt"
-        ],
+        "bartenderHostileTo": [],
         "barOnFire": false,
         "thiefActive": false,
         "guardsWatchingBar": false,
@@ -132,59 +84,42 @@
         "barRepairProgress": 0,
         "barRepairNeeded": 0
       },
-      "hp": 0,
+      "hp": 100,
       "maxHp": 100,
-      "form": "bar_ruins",
-      "status": "destroyed",
-      "rebuildProject": {
-        "active": true,
-        "progress": 28,
-        "required": 100,
-        "type": "rebuild_bar"
-      }
+      "form": "old_bar",
+      "status": "standing"
     },
     "street": {
       "activeEvent": {
-        "id": "street_guard_stop",
-        "name": "Guard Confrontation",
+        "id": "street_crackdown",
+        "name": "Street Crackdown",
         "chainId": "guard_pressure",
-        "phase": 1,
+        "phase": 2,
         "location": "street",
-        "phaseLabel": "stop",
-        "createdAt": 1777262785424,
+        "phaseLabel": "crackdown",
+        "createdAt": 1777526660097,
         "expiresInMs": 600000,
-        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
+        "text": "The guards tighten control of the street. People back away, and every sudden move draws attention.",
         "involvedNpc": [
           "Town Guard"
         ],
         "tags": [
-          "social",
-          "street"
+          "street",
+          "guard",
+          "aftermath"
         ],
         "nextOnSuccess": null,
-        "nextOnMixed": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnFail": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        },
-        "nextOnIgnore": {
-          "eventId": "street_crackdown",
-          "location": "street"
-        }
+        "nextOnMixed": null,
+        "nextOnFail": null,
+        "nextOnIgnore": null
       },
       "recentHistory": [
+        "Hunt says into the empty street: \"hi\"",
+        "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
+        "Hunt stalls while the guard studies them.",
         "Hunt travels to street.",
         "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-        "The guards interpret the silence as guilt and grow even more suspicious.",
         "Hunt travels to street.",
-        "Hunt travels to street.",
-        "Hunt travels to street.",
-        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-        "Hunt travels to street.",
-        "The guards interpret the silence as guilt and grow even more suspicious.",
         "Hunt travels to street."
       ],
       "npcs": [
@@ -209,16 +144,7 @@
     "forest": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt searches the forest and gathers 1 wood and 1 stone.",
-        "Hunt attempts: \"search\"",
-        "Hunt travels to forest.",
-        "Hunt searches the forest and gathers 2 wood and 1 stone.",
-        "Hunt attempts: \"search\"",
-        "Hunt travels to forest.",
-        "Hunt wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.",
-        "Hunt attempts: \"repair bar\"",
-        "Hunt searches the forest and gathers 1 wood.",
-        "Hunt attempts: \"search\""
+        "Hunt travels to forest."
       ],
       "npcs": [
         "Goblin"
@@ -246,7 +172,7 @@
   "globalState": {
     "villagersOnEdge": false,
     "recentViolence": 0,
-    "guardsAlertLevel": 3,
+    "guardsAlertLevel": 1,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
   }

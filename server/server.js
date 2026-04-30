@@ -30,7 +30,12 @@ const {
   updateReputation,
   getReputationReaction
 } = require("./src/systems/reputationSystem");
-
+const {
+  ensureIntroQuest,
+  isInIntroQuest,
+  handleIntroQuestAction,
+  createIntroDisplayWorldState
+} = require("./src/systems/introQuestSystem");
 const {
   loadPlayer,
   savePlayer,
@@ -348,7 +353,8 @@ const {
   buildLookDescription,
   getInventoryHtml,
   getOtherPlayersHtml,
-  getLocationExtra
+  getLocationExtra,
+  renderGamePage
 } = renderSystem;
 
 const combatSystem = createCombatSystem({
@@ -423,26 +429,66 @@ app.get("/", (req, res) => {
   const player = loadPlayer(playerName);
   ensurePlayerProgression(player);
   updatePlayerSkills(player);
+  ensureIntroQuest(player);
+
+  if (isInIntroQuest(player)) {
+    const realWorldState = loadWorldState();
+    const tutorialWorldState = createIntroDisplayWorldState(player, realWorldState);
+    const tutorialLocation = world[player.location];
+
+    const tutorialLinks = tutorialLocation.paths.map((p) =>
+      `<a href="/move/${p}?player=${encodeURIComponent(playerName)}">${p}</a>`
+    ).join("<br>");
+
+    const tutorialEventsHtml = (player.introLog || [])
+  .slice(-20)
+  .reverse()
+  .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
+  .join("");
+    savePlayer(player);
+
+    return res.send(renderGamePage({
+      player,
+      playerName,
+      worldState: tutorialWorldState,
+      location: tutorialLocation,
+      activeEvent: tutorialWorldState.locationStates[player.location]?.activeEvent,
+      links: tutorialLinks,
+      eventsHtml: tutorialEventsHtml,
+      reputationReaction: getReputationReaction(player.reputation),
+      formatWorldTime,
+      getReputationReaction,
+      mode: "tutorial",
+      tutorialBanner: `
+        <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
+          <strong>Old Tale / Dream Memory</strong>
+          <p style="margin:6px 0;">
+            You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+            but the real shared world begins when you wake.
+          </p>
+        </div>
+      `
+    }));
+  }
 
   const worldState = loadWorldState();
   ensureLocationHp(worldState, "bar");
 
-if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
-  addWorldEvent(
-    worldState,
-    `${player.name} arrives at the bar, but it has been destroyed. Only charred remains stand.`,
-    "bar"
-  );
+  if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
+    addWorldEvent(
+      worldState,
+      `${player.name} arrives at the bar, but it has been destroyed. Only charred remains stand.`,
+      "bar"
+    );
 
-  // 🔥 MOVE PLAYER OUT
-  player.location = "street";
+    player.location = "street";
 
-  savePlayer(player);
-  saveWorldState(worldState);
+    savePlayer(player);
+    saveWorldState(worldState);
 
-  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-}
- 
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
+
   const location = world[player.location];
   const activeEvent = worldState.locationStates[player.location]?.activeEvent;
 
@@ -450,7 +496,6 @@ if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
 
   forgiveBartenderIfEarned(worldState, player);
   forgiveGuardRestrictionsIfEarned(player, worldState);
-
   clearExpiredEventIfNeeded(worldState, player.location);
 
   savePlayer(player);
@@ -460,97 +505,26 @@ if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
     `<a href="/move/${p}?player=${encodeURIComponent(playerName)}">${p}</a>`
   ).join("<br>");
 
-  const eventsHtml = worldState.eventLog
-    .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
-    .join("");
+ const eventsHtml = worldState.eventLog
+  .slice(0, 20)
+  .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
+  .join("");
 
   const reputationReaction = getReputationReaction(player.reputation);
 
-  res.send(`
-  <h1>${player.name.toUpperCase()} — ${player.location.toUpperCase()}</h1>
-
-  <div style="padding:10px; border:1px solid #bbb; border-radius:8px; background:#f5f5f5; margin-bottom:16px;">
-    <strong>World Time:</strong> ${formatWorldTime(worldState)}
-  </div>
-<div style="padding:10px; border:1px solid #f00; border-radius:8px; background:#fee; margin-bottom:16px;">
-  <strong>Bar Status:</strong> Destroyed
-
-  ${
-    worldState.locationStates.bar.rebuildProject
-      ? `<p><strong>Rebuild Progress:</strong> ${worldState.locationStates.bar.rebuildProject.progress}/${worldState.locationStates.bar.rebuildProject.required}</p>`
-      : ""
-  }
-</div>
-  <p><strong>Bar Status:</strong> ${worldState.locationStates.bar.status} | HP ${worldState.locationStates.bar.hp}/${worldState.locationStates.bar.maxHp}</p>
-  ${worldState.locationStates.bar.status === "destroyed" ? `
-  <div style="padding:10px; border:1px solid #b66; border-radius:8px; background:#fff1f1; margin-bottom:12px;">
-    <h3>Bar Rebuild Required</h3>
-    <p>The old bar has collapsed. Players must gather materials before it can be rebuilt.</p>
-    <p><strong>Rebuild progress: Gold = 3 points, Wood = 2 points, Stone = 4 points 
-    <p><strong>Your resources:</strong> Gold ${player.resources?.gold || 0} | Wood ${player.resources?.wood || 0} | Stone ${player.resources?.stone || 0}</p>
-    <p><strong>How to rebuild:</strong> Type <code>rebuild bar</code> or <code>repair bar</code>.</p>
-    <p><strong>How to gather:</strong> Kill goblins for gold. Search the forest for wood and stone.</p>
-  </div>
-` : ""}
-  <p>${location.description}</p>
-  <p><strong>HP:</strong> ${player.hp} / ${player.maxHp}</p>
-  <p><strong>Stats:</strong> STR ${player.stats.strength}, DEX ${player.stats.dexterity}, DEF ${player.stats.defense}, PRE ${player.stats.presence}</p>
-  <p><strong>Title:</strong> ${player.title}</p>
-  <p><strong>Skills:</strong> ${player.skills.length > 0 ? player.skills.join(", ") : "None"}</p>
-  <p><strong>Traits:</strong> Honor ${player.traits.honor} | Greed ${player.traits.greed} | Fear ${player.traits.fear} | Influence ${player.traits.influence} | Chaos ${player.traits.chaos}</p>
-  <p><strong>Reputation:</strong> ${player.reputation.title}</p>
-  ${reputationReaction ? `<p><em>${reputationReaction}</em></p>` : ""}
-  <p><strong>Guard Alert Level:</strong> ${worldState.globalState.guardsAlertLevel}</p>
-
-  ${activeEvent ? `
-    <div style="margin:12px 0; padding:12px; border:1px solid #c98; border-radius:8px; background:#fff7f2;">
-      <h3 style="margin-top:0;">Current Event</h3>
-      <p style="margin:6px 0;"><strong>${activeEvent.title || "Something is happening"}</strong></p>
-      <p style="margin:6px 0; white-space:pre-wrap;">${activeEvent.text}</p>
-    </div>
-  ` : ""}
-
-  ${!activeEvent ? getLocationExtra(player, worldState) : ""}
-
-  <h3>Action</h3>
-  <form method="POST" action="/action?player=${encodeURIComponent(playerName)}" style="margin-bottom:20px;">
-    <input
-      type="text"
-      name="action"
-      placeholder="Type your action..."
-      autocomplete="off"
-      style="padding:10px; width:420px; max-width:90%; font-size:16px;"
-    />
-    <button type="submit" style="padding:10px 16px; font-size:16px; margin-left:8px;">
-      Act
-    </button>
-  </form>
-
-  <p style="color:gray;">
-    Examples: look, help, attack goblin, defend, run, search, drink, eat, threaten, repair, clear rubble
-  </p>
-
-  <h3>Other Players Here</h3>
-  ${getOtherPlayersHtml(player)}
-
-  <h3>Move to:</h3>
-  ${links}
-
-  <h3>Inventory</h3>
-  ${getInventoryHtml(player, playerName)}
-  <h3>Resources</h3>
-<p>Gold: ${player.resources?.gold || 0} | Wood: ${player.resources?.wood || 0} | Stone: ${player.resources?.stone || 0}</p>
-
-  <h3>World Controls</h3>
-  <a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a>
-  <br>
-  <a href="/reset-world?player=${encodeURIComponent(playerName)}" onclick="return confirm('Reset the whole world?')">Reset World</a>
-
-  <h3>Shared World Events</h3>
-  <ul>
-    ${eventsHtml}
-  </ul>
-`);
+  return res.send(renderGamePage({
+    player,
+    playerName,
+    worldState,
+    location,
+    activeEvent,
+    links,
+    eventsHtml,
+    reputationReaction,
+    formatWorldTime,
+    getReputationReaction,
+    mode: "live"
+  }));
 });
 
 app.post("/action", (req, res) => {
@@ -560,25 +534,38 @@ app.post("/action", (req, res) => {
   const player = loadPlayer(playerName);
   ensurePlayerProgression(player);
   updatePlayerSkills(player);
+  ensureIntroQuest(player);
+
+  // =========================
+  // INTRO / DREAM TUTORIAL
+  // Player-only. Does NOT touch world.json.
+  // =========================
+  if (isInIntroQuest(player)) {
+    const rawAction = req.body.action || "";
+    handleIntroQuestAction(player, rawAction);
+
+    savePlayer(player);
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
 
   const worldState = loadWorldState();
   ensureLocationHp(worldState, "bar");
-  const rawAction = req.body.action || "";
-const interpreted = interpretAction(rawAction);
-const reaction = classifyReaction(rawAction);
-const lowerAction = rawAction.toLowerCase();
 
-if (
-  lowerAction.includes("repair bar") ||
-  lowerAction.includes("rebuild bar") ||
-  lowerAction.includes("fix bar") ||
-  lowerAction.includes("repair tavern") ||
-  lowerAction.includes("rebuild tavern")
-) {
-  interpreted.type = "repair";
-  interpreted.target = "bar";
-}
- 
+  const rawAction = req.body.action || "";
+  const interpreted = interpretAction(rawAction);
+  const reaction = classifyReaction(rawAction);
+  const lowerAction = rawAction.toLowerCase();
+
+  if (
+    lowerAction.includes("repair bar") ||
+    lowerAction.includes("rebuild bar") ||
+    lowerAction.includes("fix bar") ||
+    lowerAction.includes("repair tavern") ||
+    lowerAction.includes("rebuild tavern")
+  ) {
+    interpreted.type = "repair";
+    interpreted.target = "bar";
+  }
 
   syncTimedWorld(worldState);
 
@@ -627,6 +614,7 @@ if (
   if (interpreted.type === "look") {
     const description = buildLookDescription(player, worldState);
     addWorldEvent(worldState, `${player.name} looks around.\n${description}`, player.location);
+
     maybeTriggerLocationEvent(worldState, player.location, player, "look");
     advanceAndSync(worldState, 1, "look", player.location);
 
@@ -673,292 +661,295 @@ NEW EVENT LOOP
     advanceAndSync(worldState, 1, "run", player.location);
 
   } else if (interpreted.type === "search") {
-  trackAction(player, "search");
-  updateTraits(player, { greed: 1 });
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
+    trackAction(player, "search");
+    updateTraits(player, { greed: 1 });
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-  if (player.location !== "forest") {
-    addWorldEvent(worldState, `${player.name} searches around, but finds nothing useful.`, player.location);
-  } else if (!worldState.forestPotionFound) {
-    player.inventory.push("Health Potion");
-    worldState.forestPotionFound = true;
-    addWorldEvent(worldState, `${player.name} searches the forest and finds a Health Potion.`, player.location);
-  } else {
-  const foundWood = Math.floor(Math.random() * 3) + 1;
-  const foundStone = Math.random() < 0.5 ? 1 : 0;
+    if (player.location !== "forest") {
+      addWorldEvent(worldState, `${player.name} searches around, but finds nothing useful.`, player.location);
+    } else if (!worldState.forestPotionFound) {
+      player.inventory.push("Health Potion");
+      worldState.forestPotionFound = true;
+      addWorldEvent(worldState, `${player.name} searches the forest and finds a Health Potion.`, player.location);
+    } else {
+      const foundWood = Math.floor(Math.random() * 3) + 1;
+      const foundStone = Math.random() < 0.5 ? 1 : 0;
 
-  player.resources.wood += foundWood;
-  player.resources.stone += foundStone;
+      player.resources.wood += foundWood;
+      player.resources.stone += foundStone;
 
-  addWorldEvent(
-    worldState,
-    `${player.name} searches the forest and gathers ${foundWood} wood${foundStone > 0 ? ` and ${foundStone} stone` : ""}.`,
-    player.location
-  );
-}
+      addWorldEvent(
+        worldState,
+        `${player.name} searches the forest and gathers ${foundWood} wood${foundStone > 0 ? ` and ${foundStone} stone` : ""}.`,
+        player.location
+      );
+    }
 
-  maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-  spawnQueuedForestEncounterIfNeeded(worldState, player);
-  advanceAndSync(worldState, 1, "search", player.location);
+    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+    spawnQueuedForestEncounterIfNeeded(worldState, player);
+    advanceAndSync(worldState, 1, "search", player.location);
 
   } else if (interpreted.type === "drink") {
-  trackAction(player, "drink");
-  updateTraits(player, { chaos: 1, honor: -1 });
-  applyStatGrowth(player, "drink");
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
+    trackAction(player, "drink");
+    updateTraits(player, { chaos: 1, honor: -1 });
+    applyStatGrowth(player, "drink");
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-  if (player.location !== "bar") {
-    addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`, player.location);
-   }  else if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
-  addWorldEvent(worldState, `${player.name} looks for a drink, but the bar is ruins now.`, player.location);
-  } else {
-    const barState = ensureLocationHp(worldState, "bar");
-const healAmount = barState.hp >= barState.maxHp ? 15 : 10;
-    player.hp = Math.min(player.maxHp, player.hp + healAmount);
-    updateReputation(player, { honor: 1 });
-
-    addWorldEvent(
-      worldState,
-      `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: Better supplies improve recovery." : ""}`,
-      player.location
-    );
-
-    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-  }
-
-  advanceAndSync(worldState, 1, "drink", player.location);
-
- } else if (interpreted.type === "eat") {
-  trackAction(player, "eat");
-  updateTraits(player, { honor: 1 });
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
-
-  if (player.location !== "bar") {
-    addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`, player.location);
-    } else if (player.location === "bar" && isLocationDestroyed(worldState, "bar")) {
-  addWorldEvent(worldState, `${player.name} looks for food, but the bar is ruins now.`, player.location);
-  } else {
-   const barState = ensureLocationHp(worldState, "bar");
-const healAmount = barState.hp >= barState.maxHp ? 18 : 12;
-    player.hp = Math.min(player.maxHp, player.hp + healAmount);
-    updateReputation(player, { honor: 1 });
-
-    addWorldEvent(
-      worldState,
-      `${player.name} eats a warm meal.\nRecovers ${healAmount} HP.\nHonor +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: The kitchen is fully restored." : ""}`,
-      player.location
-    );
-
-    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-  }
-
-  advanceAndSync(worldState, 1, "eat", player.location);
-
- } else if (interpreted.type === "threaten") {
-  trackAction(player, "threaten");
-  updateTraits(player, { influence: 1, chaos: 1, honor: -1 });
-  applyStatGrowth(player, "threaten");
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
-
-  if (player.location === "forest") {
-    updateReputation(player, { intimidation: 1 });
-
-    addWorldEvent(
-      worldState,
-      `${player.name} lets out a terrifying threat into the forest.\nIntimidation +1.`,
-      player.location
-    );
-  } else if (player.location === "bar") {
-    updateReputation(player, { intimidation: 1, chaos: 1 });
-    markBartenderHostile(worldState, player.name);
-    player.flags.bartenderBarred = true;
-
-    addWorldEvent(
-      worldState,
-      `${player.name} makes a chilling threat in the bar.\nPeople go silent.\nIntimidation +1. Chaos +1.\nBartender Rowan will remember this.`,
-      player.location
-    );
-
-    maybeTriggerLocationEvent(worldState, player.location, player, "idle");
-  } else {
-    addWorldEvent(
-      worldState,
-      `${player.name} tries to act intimidating, but nothing really happens.`,
-      player.location
-    );
-  }
-
-  advanceAndSync(worldState, 1, "threaten", player.location);
-
-} else if (interpreted.type === "barfight") {
-  trackAction(player, "barfight");
-  updateTraits(player, { chaos: 2, honor: -1 });
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
-
-  if (player.location !== "bar") {
-    addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
+    if (player.location !== "bar") {
+      addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`, player.location);
     } else if (isLocationDestroyed(worldState, "bar")) {
-  addWorldEvent(worldState, `${player.name} looks for a bar fight, but the bar is already ruins.`, player.location);
-  } else {
-    const damage = 8;
-    player.hp = Math.max(0, player.hp - damage);
-    updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
-    
-const barDamageResult = damageLocation(worldState, "bar", 25);
-addWorldEvent(worldState, barDamageResult.text, "bar");
-    
-    
-    worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
-   
-    markBartenderHostile(worldState, player.name);
-    player.flags.bartenderBarred = true;
+      addWorldEvent(worldState, `${player.name} looks for a drink, but the bar is ruins now.`, player.location);
+    } else {
+      const barState = ensureLocationHp(worldState, "bar");
+      const healAmount = barState.hp >= barState.maxHp ? 15 : 10;
 
-    addWorldEvent(
-      worldState,
-      `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.`,
-      player.location
-    );
+      player.hp = Math.min(player.maxHp, player.hp + healAmount);
+      updateReputation(player, { honor: 1 });
 
-    if (!worldState.locationStates.bar.activeEvent) {
-      worldState.locationStates.bar.activeEvent = createEventTemplate("bar_brawl", "bar");
-      addWorldEvent(worldState, `[EVENT — BAR] ${worldState.locationStates.bar.activeEvent.text}`, "bar");
+      addWorldEvent(
+        worldState,
+        `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: Better supplies improve recovery." : ""}`,
+        player.location
+      );
+
+      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
     }
-  }
 
-  advanceAndSync(worldState, 1, "barfight", player.location);
+    advanceAndSync(worldState, 1, "drink", player.location);
 
-} else if (interpreted.type === "repair") {
-  trackAction(player, "repair");
-  updateTraits(player, { honor: 1, chaos: -1 });
-  updatePlayerTitle(player);
-  updatePlayerSkills(player);
+  } else if (interpreted.type === "eat") {
+    trackAction(player, "eat");
+    updateTraits(player, { honor: 1 });
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-  let targetLocation = interpreted.target || player.location;
+    if (player.location !== "bar") {
+      addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`, player.location);
+    } else if (isLocationDestroyed(worldState, "bar")) {
+      addWorldEvent(worldState, `${player.name} looks for food, but the bar is ruins now.`, player.location);
+    } else {
+      const barState = ensureLocationHp(worldState, "bar");
+      const healAmount = barState.hp >= barState.maxHp ? 18 : 12;
 
-  if (
-    rawAction.toLowerCase().includes("bar") ||
-    rawAction.toLowerCase().includes("tavern")
-  ) {
-    targetLocation = "bar";
-  }
+      player.hp = Math.min(player.maxHp, player.hp + healAmount);
+      updateReputation(player, { honor: 1 });
 
-  const contributionAmount = getRecoveryContributionAmount(interpreted);
+      addWorldEvent(
+        worldState,
+        `${player.name} eats a warm meal.\nRecovers ${healAmount} HP.\nHonor +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: The kitchen is fully restored." : ""}`,
+        player.location
+      );
 
-  player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
+      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+    }
 
-  const barState = ensureLocationHp(worldState, "bar");
-  const isDestroyedBar = targetLocation === "bar" && barState.status === "destroyed";
-  if (isDestroyedBar && !barState.rebuildProject) {
-  barState.rebuildProject = {
-    active: true,
-    progress: 0,
-    required: 100,
-    type: "rebuild_bar"
-  };
-}
+    advanceAndSync(worldState, 1, "eat", player.location);
 
-  if (isDestroyedBar) {
-  const canReachBar =
-    player.location === "bar" ||
-    world[player.location]?.paths?.includes("bar");
+  } else if (interpreted.type === "threaten") {
+    trackAction(player, "threaten");
+    updateTraits(player, { influence: 1, chaos: 1, honor: -1 });
+    applyStatGrowth(player, "threaten");
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-  if (!canReachBar) {
-    addWorldEvent(
-      worldState,
-      `${player.name} wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.`,
-      player.location
-    );
+    if (player.location === "forest") {
+      updateReputation(player, { intimidation: 1 });
 
-    advanceAndSync(worldState, 1, "failed-rebuild-distance", player.location);
-    savePlayer(player);
-    saveWorldState(worldState);
-    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-  }
+      addWorldEvent(
+        worldState,
+        `${player.name} lets out a terrifying threat into the forest.\nIntimidation +1.`,
+        player.location
+      );
+    } else if (player.location === "bar") {
+      updateReputation(player, { intimidation: 1, chaos: 1 });
+      markBartenderHostile(worldState, player.name);
+      player.flags.bartenderBarred = true;
 
-  const goldUsed = player.resources.gold || 0;
-  const woodUsed = player.resources.wood || 0;
-  const stoneUsed = player.resources.stone || 0;
+      addWorldEvent(
+        worldState,
+        `${player.name} makes a chilling threat in the bar.\nPeople go silent.\nIntimidation +1. Chaos +1.\nBartender Rowan will remember this.`,
+        player.location
+      );
 
-  const progressValue =
-    goldUsed * 3 +
-    woodUsed * 2 +
-    stoneUsed * 4;
+      maybeTriggerLocationEvent(worldState, player.location, player, "idle");
+    } else {
+      addWorldEvent(
+        worldState,
+        `${player.name} tries to act intimidating, but nothing really happens.`,
+        player.location
+      );
+    }
 
-  if (progressValue <= 0) {
-    addWorldEvent(
-      worldState,
-      `${player.name} wants to rebuild the bar, but has no usable resources.\nGather gold from goblins, and wood or stone from the forest.`,
-      player.location
-    );
+    advanceAndSync(worldState, 1, "threaten", player.location);
 
-    advanceAndSync(worldState, 1, "failed-rebuild-no-resources", player.location);
-    savePlayer(player);
-    saveWorldState(worldState);
-    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-  }
+  } else if (interpreted.type === "barfight") {
+    trackAction(player, "barfight");
+    updateTraits(player, { chaos: 2, honor: -1 });
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-  player.resources.gold = 0;
-  player.resources.wood = 0;
-  player.resources.stone = 0;
+    if (player.location !== "bar") {
+      addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
+    } else if (isLocationDestroyed(worldState, "bar")) {
+      addWorldEvent(worldState, `${player.name} looks for a bar fight, but the bar is already ruins.`, player.location);
+    } else {
+      const damage = 8;
+      player.hp = Math.max(0, player.hp - damage);
+      updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
 
-  const hpRepairResult = repairLocation(worldState, "bar", progressValue);
+      const barDamageResult = damageLocation(worldState, "bar", 25);
+      addWorldEvent(worldState, barDamageResult.text, "bar");
 
-  addWorldEvent(
-    worldState,
-    `${player.name} pours everything they have into rebuilding the bar.\nUsed: ${goldUsed} gold, ${woodUsed} wood, ${stoneUsed} stone.\nRebuild progress added: ${progressValue}.\n${hpRepairResult.text}`,
-    player.location
-  );
+      worldState.locationStates.village.stateFlags.tavernTroubleRumor = true;
 
-  updateReputation(player, { honor: 2 });
+      markBartenderHostile(worldState, player.name);
+      player.flags.bartenderBarred = true;
 
-  if (hpRepairResult.rebuilt) {
-    worldState.locationStates.bar.stateFlags.barDamaged = false;
-    worldState.locationStates.bar.stateFlags.barRepairing = false;
-    worldState.locationStates.village.stateFlags.tavernTroubleRumor = false;
+      addWorldEvent(
+        worldState,
+        `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.`,
+        player.location
+      );
 
-    addWorldEvent(
-      worldState,
-      `${player.name}'s contribution completes the rebuild. The bar stands again.`,
-      "bar"
-    );
-  }
+      if (!worldState.locationStates.bar.activeEvent) {
+        worldState.locationStates.bar.activeEvent = createEventTemplate("bar_brawl", "bar");
+        addWorldEvent(worldState, `[EVENT — BAR] ${worldState.locationStates.bar.activeEvent.text}`, "bar");
+      }
+    }
 
-  advanceAndSync(worldState, 1, "rebuild-bar", player.location);
-  savePlayer(player);
-  saveWorldState(worldState);
-  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-}
+    advanceAndSync(worldState, 1, "barfight", player.location);
 
-  if (targetLocation === "bar" && barState.hp < barState.maxHp) {
-    const hpRepairResult = repairLocation(worldState, "bar", contributionAmount * 10);
-    addWorldEvent(worldState, hpRepairResult.text, player.location);
-    updateReputation(player, { honor: 1 });
+  } else if (interpreted.type === "repair") {
+    trackAction(player, "repair");
+    updateTraits(player, { honor: 1, chaos: -1 });
+    updatePlayerTitle(player);
+    updatePlayerSkills(player);
 
-    advanceAndSync(worldState, 1, "repair-bar", player.location);
-    savePlayer(player);
-    saveWorldState(worldState);
-    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-  }
+    let targetLocation = interpreted.target || player.location;
 
-  const repairResult = contributeToRecovery(worldState, targetLocation, {
-    actor: player.name,
-    amount: contributionAmount,
-    type: interpreted.recoveryAction || "labor"
-  });
+    if (
+      lowerAction.includes("bar") ||
+      lowerAction.includes("tavern")
+    ) {
+      targetLocation = "bar";
+    }
 
-  addWorldEvent(worldState, repairResult.text, player.location);
+    const contributionAmount = getRecoveryContributionAmount(interpreted);
 
-  if (repairResult.success) {
-    updateReputation(player, { honor: 1 });
-  }
+    player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
 
-  advanceAndSync(worldState, 1, "repair", player.location);
-    } else if (interpreted.type === "inspect-recovery") {
+    const barState = ensureLocationHp(worldState, "bar");
+    const isDestroyedBar = targetLocation === "bar" && barState.status === "destroyed";
+
+    if (isDestroyedBar && !barState.rebuildProject) {
+      barState.rebuildProject = {
+        active: true,
+        progress: 0,
+        required: 100,
+        type: "rebuild_bar"
+      };
+    }
+
+    if (isDestroyedBar) {
+      const canReachBar =
+        player.location === "bar" ||
+        world[player.location]?.paths?.includes("bar");
+
+      if (!canReachBar) {
+        addWorldEvent(
+          worldState,
+          `${player.name} wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.`,
+          player.location
+        );
+
+        advanceAndSync(worldState, 1, "failed-rebuild-distance", player.location);
+        savePlayer(player);
+        saveWorldState(worldState);
+        return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+      }
+
+      const goldUsed = player.resources.gold || 0;
+      const woodUsed = player.resources.wood || 0;
+      const stoneUsed = player.resources.stone || 0;
+
+      const progressValue =
+        goldUsed * 3 +
+        woodUsed * 2 +
+        stoneUsed * 4;
+
+      if (progressValue <= 0) {
+        addWorldEvent(
+          worldState,
+          `${player.name} wants to rebuild the bar, but has no usable resources.\nGather gold from goblins, and wood or stone from the forest.`,
+          player.location
+        );
+
+        advanceAndSync(worldState, 1, "failed-rebuild-no-resources", player.location);
+        savePlayer(player);
+        saveWorldState(worldState);
+        return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+      }
+
+      player.resources.gold = 0;
+      player.resources.wood = 0;
+      player.resources.stone = 0;
+
+      const hpRepairResult = repairLocation(worldState, "bar", progressValue);
+
+      addWorldEvent(
+        worldState,
+        `${player.name} pours everything they have into rebuilding the bar.\nUsed: ${goldUsed} gold, ${woodUsed} wood, ${stoneUsed} stone.\nRebuild progress added: ${progressValue}.\n${hpRepairResult.text}`,
+        player.location
+      );
+
+      updateReputation(player, { honor: 2 });
+
+      if (hpRepairResult.rebuilt) {
+        worldState.locationStates.bar.stateFlags.barDamaged = false;
+        worldState.locationStates.bar.stateFlags.barRepairing = false;
+        worldState.locationStates.village.stateFlags.tavernTroubleRumor = false;
+
+        addWorldEvent(
+          worldState,
+          `${player.name}'s contribution completes the rebuild. The bar stands again.`,
+          "bar"
+        );
+      }
+
+      advanceAndSync(worldState, 1, "rebuild-bar", player.location);
+      savePlayer(player);
+      saveWorldState(worldState);
+      return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+    }
+
+    if (targetLocation === "bar" && barState.hp < barState.maxHp) {
+      const hpRepairResult = repairLocation(worldState, "bar", contributionAmount * 10);
+      addWorldEvent(worldState, hpRepairResult.text, player.location);
+      updateReputation(player, { honor: 1 });
+
+      advanceAndSync(worldState, 1, "repair-bar", player.location);
+      savePlayer(player);
+      saveWorldState(worldState);
+      return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+    }
+
+    const repairResult = contributeToRecovery(worldState, targetLocation, {
+      actor: player.name,
+      amount: contributionAmount,
+      type: interpreted.recoveryAction || "labor"
+    });
+
+    addWorldEvent(worldState, repairResult.text, player.location);
+
+    if (repairResult.success) {
+      updateReputation(player, { honor: 1 });
+    }
+
+    advanceAndSync(worldState, 1, "repair", player.location);
+
+  } else if (interpreted.type === "inspect-recovery") {
     trackAction(player, "inspect-recovery");
     updatePlayerTitle(player);
     updatePlayerSkills(player);
@@ -1005,7 +996,7 @@ addWorldEvent(worldState, barDamageResult.text, "bar");
 
   savePlayer(player);
   saveWorldState(worldState);
-  res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
 });
 
 app.get("/move/:place", (req, res) => {
@@ -1015,7 +1006,10 @@ app.get("/move/:place", (req, res) => {
   const player = loadPlayer(playerName);
   ensurePlayerProgression(player);
   updatePlayerSkills(player);
+  
 
+
+ensureIntroQuest(player);
   const worldState = loadWorldState();
   ensureLocationHp(worldState, "bar");
   const destination = req.params.place;
@@ -1060,6 +1054,50 @@ app.get("/rest", (req, res) => {
   ensurePlayerProgression(player);
   updatePlayerSkills(player);
 
+
+ensureIntroQuest(player);
+
+if (isInIntroQuest(player)) {
+  const realWorldState = loadWorldState();
+  const tutorialWorldState = createIntroDisplayWorldState(player, realWorldState);
+
+  const tutorialLocation = world[player.location];
+
+  const tutorialLinks = tutorialLocation.paths.map((p) =>
+    `<a href="/move/${p}?player=${encodeURIComponent(playerName)}">${p}</a>`
+  ).join("<br>");
+
+  const tutorialEventsHtml = (player.introLog || [])
+  .slice(-20)
+  .reverse()
+  .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
+  .join("");
+
+  savePlayer(player);
+
+  return res.send(renderGamePage({
+    player,
+    playerName,
+    worldState: tutorialWorldState,
+    location: tutorialLocation,
+    activeEvent: tutorialWorldState.locationStates[player.location]?.activeEvent,
+    links: tutorialLinks,
+    eventsHtml: tutorialEventsHtml,
+    reputationReaction: getReputationReaction(player.reputation),
+    formatWorldTime,
+    getReputationReaction,
+    mode: "tutorial",
+    tutorialBanner: `
+      <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
+        <strong>Old Tale / Dream Memory</strong>
+        <p style="margin:6px 0;">
+          You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+          but the real shared world begins when you wake.
+        </p>
+      </div>
+    `
+  }));
+}
   const worldState = loadWorldState();
 ensureLocationHp(worldState, "bar");
 
@@ -1089,6 +1127,49 @@ app.get("/use-item/:index", (req, res) => {
   ensurePlayerProgression(player);
   updatePlayerSkills(player);
 
+ensureIntroQuest(player);
+
+if (isInIntroQuest(player)) {
+  const realWorldState = loadWorldState();
+  const tutorialWorldState = createIntroDisplayWorldState(player, realWorldState);
+
+  const tutorialLocation = world[player.location];
+
+  const tutorialLinks = tutorialLocation.paths.map((p) =>
+    `<a href="/move/${p}?player=${encodeURIComponent(playerName)}">${p}</a>`
+  ).join("<br>");
+
+  const tutorialEventsHtml = (player.introLog || [])
+  .slice(-20)
+  .reverse()
+  .map(event => `<li><pre style="margin:0; white-space:pre-wrap; font-family:inherit;">${event}</pre></li>`)
+  .join("");
+
+  savePlayer(player);
+
+  return res.send(renderGamePage({
+    player,
+    playerName,
+    worldState: tutorialWorldState,
+    location: tutorialLocation,
+    activeEvent: tutorialWorldState.locationStates[player.location]?.activeEvent,
+    links: tutorialLinks,
+    eventsHtml: tutorialEventsHtml,
+    reputationReaction: getReputationReaction(player.reputation),
+    formatWorldTime,
+    getReputationReaction,
+    mode: "tutorial",
+    tutorialBanner: `
+      <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
+        <strong>Old Tale / Dream Memory</strong>
+        <p style="margin:6px 0;">
+          You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+          but the real shared world begins when you wake.
+        </p>
+      </div>
+    `
+  }));
+}
   const worldState = loadWorldState();
   ensureLocationHp(worldState, "bar");
   const index = parseInt(req.params.index, 10);

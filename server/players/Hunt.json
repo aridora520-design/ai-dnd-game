@@ -1,11 +1,9 @@
 {
   "name": "Hunt",
-  "location": "village",
-  "hp": 92,
+  "location": "street",
+  "hp": 39,
   "maxHp": 100,
-  "inventory": [
-    "Health Potion"
-  ],
+  "inventory": [],
   "stats": {
     "strength": 2,
     "dexterity": 3,
@@ -13,37 +11,38 @@
     "presence": 2
   },
   "reputation": {
-    "chaos": 2,
-    "honor": 5,
-    "intimidation": 2,
-    "title": "Trusted Soul"
+    "chaos": 0,
+    "honor": 0,
+    "intimidation": 0,
+    "title": "Unknown"
   },
   "flags": {
     "knownTroublemaker": false,
     "helpedTownsfolk": false,
-    "bartenderBarred": true,
+    "bartenderBarred": false,
     "blockedFromStreet": false,
-    "wantedByGuards": false
+    "wantedByGuards": false,
+    "completedIntroQuest": true
   },
   "resources": {
-    "gold": 0,
+    "gold": 5,
     "wood": 0,
     "stone": 0
   },
   "traits": {
-    "honor": 7,
-    "greed": 6,
+    "honor": 0,
+    "greed": 0,
     "fear": 0,
     "influence": 0,
     "chaos": 0
   },
   "progression": {
-    "actionCounts": {
-      "search": 6,
-      "barfight": 1,
-      "repair": 7
-    }
+    "actionCounts": {}
   },
-  "title": "Wanderer",
-  "skills": []
+  "title": "Survivor of the Old Tale",
+  "skills": [],
+  "introLog": [
+    "Hunt wakes in the real Crooked Lantern. The village stands rebuilt on old scars."
+  ],
+  "instance": null
 }
