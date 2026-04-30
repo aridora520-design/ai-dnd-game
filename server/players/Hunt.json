@@ -1,7 +1,7 @@
 {
   "name": "Hunt",
-  "location": "street",
-  "hp": 39,
+  "location": "bar",
+  "hp": 100,
   "maxHp": 100,
   "inventory": [],
   "stats": {
@@ -21,11 +21,10 @@
     "helpedTownsfolk": false,
     "bartenderBarred": false,
     "blockedFromStreet": false,
-    "wantedByGuards": false,
-    "completedIntroQuest": true
+    "wantedByGuards": false
   },
   "resources": {
-    "gold": 5,
+    "gold": 0,
     "wood": 0,
     "stone": 0
   },
@@ -39,10 +38,20 @@
   "progression": {
     "actionCounts": {}
   },
-  "title": "Survivor of the Old Tale",
+  "title": "Wanderer",
   "skills": [],
-  "introLog": [
-    "Hunt wakes in the real Crooked Lantern. The village stands rebuilt on old scars."
-  ],
-  "instance": null
+  "introLog": [],
+  "instance": {
+    "active": true,
+    "id": "bar_fire_intro",
+    "stage": "bartender_intro",
+    "barHp": 100,
+    "villageHp": 100,
+    "goblinHp": 20,
+    "warbandHp": 45,
+    "bossHp": 70,
+    "fireResolved": false,
+    "rewardGiven": false,
+    "completed": false
+  }
 }
