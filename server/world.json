@@ -1,20 +1,61 @@
 {
   "time": {
-    "day": 1,
-    "hour": 8,
-    "turn": 0
+    "day": 15,
+    "hour": 18,
+    "turn": 346
   },
-  "goblinAlive": true,
-  "goblinHp": 40,
-  "goblinCorpses": 0,
-  "forestPotionFound": false,
+  "goblinAlive": false,
+  "goblinHp": 0,
+  "goblinCorpses": 1,
+  "forestPotionFound": true,
   "eventLog": [
-    "The world begins. The village waits in silence."
+    "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
+    "Hunt attempts: \"attack goblin\"",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"Burn Village\"",
+    "Hunt travels to forest.",
+    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+    "Hunt travels to street.",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"Burn Village\"",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"Shield Ally\"",
+    "The Dungeon Master does not understand Hunt's action yet.",
+    "Hunt attempts: \"Defend Village\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them.",
+    "Hunt attempts: \"defend\"",
+    "Hunt tries to defend, but nothing threatens them."
   ],
   "locationStates": {
     "village": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt travels to village."
+      ],
       "npcs": [
         "Old Villager",
         "Worried Farmer",
@@ -64,12 +105,55 @@
         "barClosedUntilTurn": null,
         "barClosedUntilDay": null,
         "barClosedUntilHour": null,
-        "repairContributionPoints": 0
-      }
+        "repairContributionPoints": 0,
+        "barAutoRepairAtTurn": null,
+        "barRepairProgress": 0,
+        "barRepairNeeded": 0
+      },
+      "hp": 100,
+      "maxHp": 100,
+      "form": "old_bar",
+      "status": "standing"
     },
     "street": {
-      "activeEvent": null,
-      "recentHistory": [],
+      "activeEvent": {
+        "id": "street_guard_stop",
+        "name": "Guard Confrontation",
+        "chainId": "guard_pressure",
+        "phase": 1,
+        "location": "street",
+        "phaseLabel": "stop",
+        "createdAt": 1777778368967,
+        "expiresInMs": 600000,
+        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
+        "involvedNpc": [
+          "Town Guard"
+        ],
+        "tags": [
+          "social",
+          "street"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_crackdown",
+          "location": "street"
+        }
+      },
+      "recentHistory": [
+        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+        "Hunt travels to street.",
+        "Hunt waits and watches the world move around them.",
+        "Hunt attempts: \"wait\"",
+        "Hunt travels to street."
+      ],
       "npcs": [
         "Town Guard",
         "Cart Driver",
@@ -91,7 +175,18 @@
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
+        "Hunt attempts: \"attack goblin\"",
+        "The Dungeon Master does not understand Hunt's action yet.",
+        "Hunt attempts: \"Burn Village\"",
+        "Hunt travels to forest.",
+        "The Dungeon Master does not understand Hunt's action yet.",
+        "Hunt attempts: \"Burn Village\"",
+        "The Dungeon Master does not understand Hunt's action yet.",
+        "Hunt attempts: \"Shield Ally\"",
+        "The Dungeon Master does not understand Hunt's action yet."
+      ],
       "npcs": [
         "Goblin"
       ],
@@ -106,18 +201,19 @@
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
-        "forestDanger": 0,
+        "forestDanger": 1,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 0,
+        "forestStayCounter": 1,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
-        "goblinCorpsesDecayAtTurn": null
+        "goblinCorpsesDecayAtTurn": null,
+        "pendingForestEncounter": true
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
-    "recentViolence": 0,
+    "recentViolence": 1,
     "guardsAlertLevel": 0,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null

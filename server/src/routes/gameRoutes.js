@@ -1,10 +1,14 @@
 const fs = require("fs");
 const path = require("path");
+const {
+  ensureActorProgression,
+  recordActorAction,
+  recalculateActorProgression
+} = require("../systems/actorProgressionSystem");
 
-const { updatePlayerSkills } = require("../systems/skillSystem");
 const { updateTraits } = require("../systems/traitSystem");
-const { updatePlayerTitle } = require("../systems/titleSystem");
-const { applyStatGrowth } = require("../systems/statSystem");
+
+
 const { createTimeSystem } = require("../systems/timeSystem");
 const { createActionResolutionSystem } = require("../systems/actionResolutionSystem");
 const { createCombatSystem } = require("../systems/combatSystem");
@@ -106,13 +110,6 @@ function registerGameRoutes(app) {
     wood: 0,
     stone: 0
   };
-    player.traits = player.traits || {
-      honor: 0,
-      greed: 0,
-      fear: 0,
-      influence: 0,
-      chaos: 0
-    };
   
     player.progression = player.progression || {
       actionCounts: {}
@@ -120,17 +117,13 @@ function registerGameRoutes(app) {
   
     player.title = player.title || "Wanderer";
     player.skills = player.skills || [];
+    ensureActorProgression(player);
+
   }
   
-  function trackAction(player, actionType) {
-    ensurePlayerProgression(player);
-  
-    if (!player.progression.actionCounts[actionType]) {
-      player.progression.actionCounts[actionType] = 0;
-    }
-  
-    player.progression.actionCounts[actionType] += 1;
-  }
+function trackAction(player, actionType) {
+  recordActorAction(player, actionType);
+}
   
   function syncTimedWorld(worldState) {
     ensureTimeState(worldState);
@@ -412,7 +405,7 @@ function registerGameRoutes(app) {
   
     const player = loadPlayer(playerName);
     ensurePlayerProgression(player);
-    updatePlayerSkills(player);
+    
     ensureIntroQuest(player);
   
     if (isInIntroQuest(player)) {
@@ -444,6 +437,12 @@ function registerGameRoutes(app) {
         getReputationReaction,
         mode: "tutorial",
         tutorialBanner: `
+        <p>
+  <a href="/skip-tutorial?player=${encodeURIComponent(playerName)}"
+     style="display:inline-block; padding:8px 12px; border:1px solid #777; border-radius:8px; background:#fff; text-decoration:none;">
+    Skip Tutorial
+  </a>
+</p>
           <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
             <strong>Old Tale / Dream Memory</strong>
             <p style="margin:6px 0;">
@@ -517,7 +516,7 @@ function registerGameRoutes(app) {
   
     const player = loadPlayer(playerName);
     ensurePlayerProgression(player);
-    updatePlayerSkills(player);
+   
     ensureIntroQuest(player);
   
     // =========================
@@ -633,22 +632,25 @@ function registerGameRoutes(app) {
       advanceAndSync(worldState, 1, "help", player.location);
   
     } else if (interpreted.type === "attack") {
+      trackAction(player, "attack");
       handleAttackAction(player, worldState, interpreted, flavor);
       advanceAndSync(worldState, 1, "attack", player.location);
   
     } else if (interpreted.type === "defend") {
+        trackAction(player, "defend");
       handleDefendAction(player, worldState);
       advanceAndSync(worldState, 1, "defend", player.location);
   
     } else if (interpreted.type === "run") {
+        trackAction(player, "run");
       handleRunAction(player, worldState);
       advanceAndSync(worldState, 1, "run", player.location);
   
     } else if (interpreted.type === "search") {
       trackAction(player, "search");
       updateTraits(player, { greed: 1 });
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+     
   
       if (player.location !== "forest") {
         addWorldEvent(worldState, `${player.name} searches around, but finds nothing useful.`, player.location);
@@ -677,9 +679,7 @@ function registerGameRoutes(app) {
     } else if (interpreted.type === "drink") {
       trackAction(player, "drink");
       updateTraits(player, { chaos: 1, honor: -1 });
-      applyStatGrowth(player, "drink");
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
   
       if (player.location !== "bar") {
         addWorldEvent(worldState, `${player.name} tries to drink, but there's nothing here.`, player.location);
@@ -706,8 +706,8 @@ function registerGameRoutes(app) {
     } else if (interpreted.type === "eat") {
       trackAction(player, "eat");
       updateTraits(player, { honor: 1 });
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+      
   
       if (player.location !== "bar") {
         addWorldEvent(worldState, `${player.name} looks for food, but finds nothing.`, player.location);
@@ -734,9 +734,8 @@ function registerGameRoutes(app) {
     } else if (interpreted.type === "threaten") {
       trackAction(player, "threaten");
       updateTraits(player, { influence: 1, chaos: 1, honor: -1 });
-      applyStatGrowth(player, "threaten");
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+      
   
       if (player.location === "forest") {
         updateReputation(player, { intimidation: 1 });
@@ -771,8 +770,8 @@ function registerGameRoutes(app) {
     } else if (interpreted.type === "barfight") {
       trackAction(player, "barfight");
       updateTraits(player, { chaos: 2, honor: -1 });
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+     
   
       if (player.location !== "bar") {
         addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
@@ -808,8 +807,8 @@ function registerGameRoutes(app) {
     } else if (interpreted.type === "repair") {
       trackAction(player, "repair");
       updateTraits(player, { honor: 1, chaos: -1 });
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+      
   
       let targetLocation = interpreted.target || player.location;
   
@@ -935,8 +934,7 @@ function registerGameRoutes(app) {
   
     } else if (interpreted.type === "inspect-recovery") {
       trackAction(player, "inspect-recovery");
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
   
       const targetLocation = interpreted.target || player.location;
       const actions = getLocationRecoveryActions(worldState, targetLocation);
@@ -959,8 +957,8 @@ function registerGameRoutes(app) {
   
     } else if (interpreted.type === "wait") {
       trackAction(player, "wait");
-      updatePlayerTitle(player);
-      updatePlayerSkills(player);
+      
+    
   
       addWorldEvent(
         worldState,
@@ -989,7 +987,7 @@ function registerGameRoutes(app) {
   
     const player = loadPlayer(playerName);
     ensurePlayerProgression(player);
-    updatePlayerSkills(player);
+    
     
   
   
@@ -1036,7 +1034,7 @@ function registerGameRoutes(app) {
   
     const player = loadPlayer(playerName);
     ensurePlayerProgression(player);
-    updatePlayerSkills(player);
+    
   
   
   ensureIntroQuest(player);
@@ -1109,7 +1107,7 @@ function registerGameRoutes(app) {
   
     const player = loadPlayer(playerName);
     ensurePlayerProgression(player);
-    updatePlayerSkills(player);
+    
   
   ensureIntroQuest(player);
   
@@ -1168,7 +1166,24 @@ function registerGameRoutes(app) {
     saveWorldState(worldState);
     res.redirect(`/?player=${encodeURIComponent(playerName)}`);
   });
-  
+  app.get("/skip-tutorial", (req, res) => {
+  const playerName = req.query.player;
+  if (!playerName) return res.redirect("/");
+
+  const player = loadPlayer(playerName);
+  ensurePlayerProgression(player);
+
+  player.flags = player.flags || {};
+  player.flags.completedIntroQuest = true;
+
+  player.instance = null;
+  player.introLog = [];
+  player.location = "village";
+
+  savePlayer(player);
+
+  res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+});
   app.get("/reset-world", (req, res) => {
     const playerName = req.query.player;
   

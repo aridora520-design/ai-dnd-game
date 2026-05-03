@@ -1,57 +1,102 @@
 {
   "name": "Hunt",
-  "location": "bar",
-  "hp": 100,
+  "location": "forest",
+  "hp": 97,
   "maxHp": 100,
-  "inventory": [],
+  "inventory": [
+    "Health Potion"
+  ],
   "stats": {
-    "strength": 2,
-    "dexterity": 3,
-    "defense": 1,
-    "presence": 2
+    "strength": 40,
+    "defense": 20,
+    "dexterity": 2,
+    "presence": 8
   },
   "reputation": {
-    "chaos": 0,
-    "honor": 0,
-    "intimidation": 0,
-    "title": "Unknown"
+    "title": "Trusted Voice",
+    "score": 89,
+    "breakdown": [
+      {
+        "title": "Trusted Voice",
+        "score": 89
+      },
+      {
+        "title": "Protector of the Realm",
+        "score": 65
+      },
+      {
+        "title": "Public Menace",
+        "score": 55
+      },
+      {
+        "title": "Unknown Figure",
+        "score": 5
+      },
+      {
+        "title": "Known Opportunist",
+        "score": -33
+      },
+      {
+        "title": "Unreliable Coward",
+        "score": -106
+      }
+    ]
   },
   "flags": {
     "knownTroublemaker": false,
     "helpedTownsfolk": false,
     "bartenderBarred": false,
     "blockedFromStreet": false,
-    "wantedByGuards": false
+    "wantedByGuards": false,
+    "completedIntroQuest": true
   },
   "resources": {
-    "gold": 0,
-    "wood": 0,
-    "stone": 0
-  },
-  "traits": {
-    "honor": 0,
-    "greed": 0,
-    "fear": 0,
-    "influence": 0,
-    "chaos": 0
+    "gold": 6,
+    "wood": 50,
+    "stone": 10
   },
   "progression": {
-    "actionCounts": {}
+    "actionCounts": {
+      "search": 27,
+      "wait": 23,
+      "defend": 142,
+      "run": 2,
+      "attack": 195
+    },
+    "actionPoints": {
+      "search": 27,
+      "wait": 23,
+      "defend": 142,
+      "run": 2,
+      "attack": 195
+    }
   },
-  "title": "Wanderer",
-  "skills": [],
+  "title": "Slayer",
+  "skills": [
+    "Heavy Strike",
+    "Blood Rush"
+  ],
+  "traits": {
+    "honor": 71,
+    "greed": 27,
+    "fear": 1,
+    "influence": 47,
+    "chaos": 65
+  },
   "introLog": [],
-  "instance": {
-    "active": true,
-    "id": "bar_fire_intro",
-    "stage": "bartender_intro",
-    "barHp": 100,
-    "villageHp": 100,
-    "goblinHp": 20,
-    "warbandHp": 45,
-    "bossHp": 70,
-    "fireResolved": false,
-    "rewardGiven": false,
-    "completed": false
-  }
+  "instance": null,
+  "introQuest": {
+    "completed": true,
+    "active": false
+  },
+  "titleDebug": [
+    {
+      "title": "Slayer",
+      "score": 415
+    },
+    {
+      "title": "Guardian",
+      "score": 361
+    }
+  ]
 }
