@@ -1,59 +1,85 @@
 {
   "time": {
-    "day": 15,
-    "hour": 18,
-    "turn": 346
+    "day": 23,
+    "hour": 21,
+    "turn": 541
   },
-  "goblinAlive": false,
-  "goblinHp": 0,
-  "goblinCorpses": 1,
+  "goblinAlive": true,
+  "goblinHp": 12,
+  "goblinCorpses": 3,
   "forestPotionFound": true,
   "eventLog": [
+    "Hunt travels to village.",
     "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
-    "Hunt attempts: \"attack goblin\"",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"Burn Village\"",
-    "Hunt travels to forest.",
-    "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+    "Hunt attempts a ruthless execution strike.",
+    "Hunt attempts: \"Execute\"",
+    "Hunt travels to bar.",
+    "[EVENT — VILLAGE] A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
+    "Hunt travels to village.",
+    "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
+    "The guards interpret the silence as guilt and grow even more suspicious.",
     "Hunt travels to street.",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"Burn Village\"",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"Shield Ally\"",
-    "The Dungeon Master does not understand Hunt's action yet.",
-    "Hunt attempts: \"Defend Village\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them.",
-    "Hunt attempts: \"defend\"",
-    "Hunt tries to defend, but nothing threatens them."
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\""
   ],
   "locationStates": {
     "village": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "village_guard_murmur",
+        "name": "Guard Murmur",
+        "chainId": "village_consequence",
+        "phase": 1,
+        "location": "village",
+        "phaseLabel": "murmur",
+        "createdAt": 1777779334656,
+        "expiresInMs": 600000,
+        "text": "A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
+        "involvedNpc": [
+          "Old Villager",
+          "Passing Guard"
+        ],
+        "tags": [
+          "village",
+          "guard",
+          "rumor"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": null,
+        "nextOnFail": null,
+        "nextOnIgnore": null
+      },
       "recentHistory": [
+        "Hunt travels to village.",
+        "[EVENT — VILLAGE] A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
+        "Hunt travels to village.",
         "Hunt travels to village."
       ],
       "npcs": [
@@ -80,7 +106,12 @@
     },
     "bar": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
+        "Hunt attempts a ruthless execution strike.",
+        "Hunt attempts: \"Execute\"",
+        "Hunt travels to bar."
+      ],
       "npcs": [
         "Bartender Rowan",
         "Drunk Patron",
@@ -117,37 +148,41 @@
     },
     "street": {
       "activeEvent": {
-        "id": "street_guard_stop",
-        "name": "Guard Confrontation",
-        "chainId": "guard_pressure",
+        "id": "street_cart",
+        "name": "Runaway Cart",
+        "chainId": "cart_chain",
         "phase": 1,
         "location": "street",
-        "phaseLabel": "stop",
-        "createdAt": 1777778368967,
+        "phaseLabel": "runaway",
+        "createdAt": 1777779331283,
         "expiresInMs": 600000,
-        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
+        "text": "A horse panics. A loaded cart jerks loose and barrels down the street.",
         "involvedNpc": [
+          "Cart Driver",
           "Town Guard"
         ],
         "tags": [
-          "social",
+          "environment",
           "street"
         ],
         "nextOnSuccess": null,
         "nextOnMixed": {
-          "eventId": "street_crackdown",
+          "eventId": "street_debris",
           "location": "street"
         },
         "nextOnFail": {
-          "eventId": "street_crackdown",
+          "eventId": "street_debris",
           "location": "street"
         },
         "nextOnIgnore": {
-          "eventId": "street_crackdown",
+          "eventId": "street_debris",
           "location": "street"
         }
       },
       "recentHistory": [
+        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "The guards interpret the silence as guilt and grow even more suspicious.",
+        "Hunt travels to street.",
         "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
         "Hunt travels to street.",
         "Hunt waits and watches the world move around them.",
@@ -169,23 +204,23 @@
       },
       "stateFlags": {
         "cartCrashed": false,
-        "guardsAlert": false,
+        "guardsAlert": true,
         "blockedUntilTurn": null
       }
     },
     "forest": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
-        "Hunt attempts: \"attack goblin\"",
-        "The Dungeon Master does not understand Hunt's action yet.",
-        "Hunt attempts: \"Burn Village\"",
-        "Hunt travels to forest.",
-        "The Dungeon Master does not understand Hunt's action yet.",
-        "Hunt attempts: \"Burn Village\"",
-        "The Dungeon Master does not understand Hunt's action yet.",
-        "Hunt attempts: \"Shield Ally\"",
-        "The Dungeon Master does not understand Hunt's action yet."
+        "Hunt searches the forest and gathers 1 wood.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 2 wood and 1 stone.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 2 wood.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 1 wood and 1 stone.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 3 wood and 1 stone.",
+        "Hunt attempts: \"search\""
       ],
       "npcs": [
         "Goblin"
@@ -201,21 +236,22 @@
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
-        "forestDanger": 1,
+        "forestDanger": 3,
         "reinforcementAmbushPending": false,
-        "forestStayCounter": 1,
+        "forestStayCounter": 0,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
         "goblinCorpsesDecayAtTurn": null,
-        "pendingForestEncounter": true
+        "pendingForestEncounter": false
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
-    "recentViolence": 1,
-    "guardsAlertLevel": 0,
+    "recentViolence": 3,
+    "guardsAlertLevel": 1,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
-  }
+  },
+  "goblinType": "Goblin Scout"
 }

@@ -538,7 +538,31 @@ function trackAction(player, actionType) {
     const interpreted = interpretAction(rawAction);
     const reaction = classifyReaction(rawAction);
     const lowerAction = rawAction.toLowerCase();
-  
+  const titleActionMap = {
+  "defend village": "title_defend_village",
+  "shield ally": "title_shield_ally",
+  "burn village": "title_burn_village",
+
+  "execute": "title_execute",
+  "charge attack": "title_charge_attack",
+  "spare enemy": "title_spare_enemy",
+
+  "threaten crowd": "title_threaten_crowd",
+  "intimidate guard": "title_intimidate_guard",
+  "protect child": "title_protect_child",
+
+  "flee early": "title_flee_early",
+  "hide": "title_hide",
+  "stand and fight": "title_stand_and_fight",
+
+  "drink more": "title_drink_more",
+  "drunken swing": "title_drunken_swing",
+  "sober up": "title_sober_up"
+};
+
+if (titleActionMap[lowerAction]) {
+  interpreted.type = titleActionMap[lowerAction];
+}
     if (
       lowerAction.includes("repair bar") ||
       lowerAction.includes("rebuild bar") ||
@@ -969,7 +993,199 @@ function trackAction(player, actionType) {
       maybeTriggerLocationEvent(worldState, player.location, player, "idle");
       spawnQueuedForestEncounterIfNeeded(worldState, player);
       advanceAndSync(worldState, 1, "wait", player.location);
-  
+  } else if (interpreted.type === "title_defend_village") {
+  trackAction(player, "defend");
+
+  worldState.locationStates.village.stateFlags.villageDefended = true;
+  worldState.globalState.guardsAlertLevel = Math.max(0, (worldState.globalState.guardsAlertLevel || 0) - 1);
+
+  addWorldEvent(
+    worldState,
+    `${player.name} rallies villagers and helps defend the village.\nThe village feels safer.\nHonor rises.`,
+    "village"
+  );
+
+  updateReputation(player, { honor: 2 });
+  advanceAndSync(worldState, 2, "defend-village", player.location);
+
+} else if (interpreted.type === "title_burn_village") {
+  trackAction(player, "barfight");
+
+  worldState.locationStates.village.stateFlags.villageBurned = true;
+  worldState.locationStates.village.stateFlags.crowdUneasy = true;
+  worldState.globalState.guardsAlertLevel = (worldState.globalState.guardsAlertLevel || 0) + 5;
+
+  addWorldEvent(
+    worldState,
+    `${player.name} betrays their guardian image and sets fire to part of the village.\nPanic spreads.\nGuards are now highly alert.`,
+    "village"
+  );
+
+  updateReputation(player, { chaos: 5, honor: -5, intimidation: 3 });
+  advanceAndSync(worldState, 3, "burn-village", player.location);
+
+} else if (interpreted.type === "title_shield_ally") {
+  trackAction(player, "defend");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} steps in front of danger and shields an ally.\nPeople remember the act.`,
+    player.location
+  );
+
+  updateReputation(player, { honor: 2 });
+  advanceAndSync(worldState, 1, "shield-ally", player.location);
+
+} else if (interpreted.type === "title_execute") {
+  trackAction(player, "attack");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} attempts a ruthless execution strike.`,
+    player.location
+  );
+
+  handleAttackAction(player, worldState, { type: "attack", target: "goblin" }, flavor);
+  updateReputation(player, { intimidation: 2, chaos: 1 });
+  advanceAndSync(worldState, 1, "execute", player.location);
+
+} else if (interpreted.type === "title_charge_attack") {
+  trackAction(player, "attack");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} charges forward with brutal force.`,
+    player.location
+  );
+
+  handleAttackAction(player, worldState, { type: "attack", target: "goblin" }, flavor);
+  advanceAndSync(worldState, 1, "charge-attack", player.location);
+
+} else if (interpreted.type === "title_spare_enemy") {
+  trackAction(player, "defend");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} chooses mercy and spares an enemy.\nHonor rises.`,
+    player.location
+  );
+
+  updateReputation(player, { honor: 3, chaos: -1 });
+  advanceAndSync(worldState, 1, "spare-enemy", player.location);
+
+} else if (interpreted.type === "title_threaten_crowd") {
+  trackAction(player, "threaten");
+
+  worldState.globalState.guardsAlertLevel = (worldState.globalState.guardsAlertLevel || 0) + 2;
+
+  addWorldEvent(
+    worldState,
+    `${player.name} threatens the crowd.\nPeople back away in fear.\nThe guards take notice.`,
+    player.location
+  );
+
+  updateReputation(player, { intimidation: 3, chaos: 2, honor: -2 });
+  advanceAndSync(worldState, 1, "threaten-crowd", player.location);
+
+} else if (interpreted.type === "title_intimidate_guard") {
+  trackAction(player, "threaten");
+
+  worldState.globalState.guardsAlertLevel = (worldState.globalState.guardsAlertLevel || 0) + 3;
+
+  addWorldEvent(
+    worldState,
+    `${player.name} tries to intimidate a guard.\nThe guard does not forget it.`,
+    player.location
+  );
+
+  updateReputation(player, { intimidation: 4, chaos: 2, honor: -2 });
+  advanceAndSync(worldState, 1, "intimidate-guard", player.location);
+
+} else if (interpreted.type === "title_protect_child") {
+  trackAction(player, "defend");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} protects a frightened child despite their menacing reputation.\nThe crowd is stunned.`,
+    player.location
+  );
+
+  updateReputation(player, { honor: 4, chaos: -2 });
+  advanceAndSync(worldState, 1, "protect-child", player.location);
+
+} else if (interpreted.type === "title_flee_early") {
+  trackAction(player, "run");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} flees before danger fully arrives.`,
+    player.location
+  );
+
+  handleRunAction(player, worldState);
+  advanceAndSync(worldState, 1, "flee-early", player.location);
+
+} else if (interpreted.type === "title_hide") {
+  trackAction(player, "run");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} hides and avoids attention.`,
+    player.location
+  );
+
+  advanceAndSync(worldState, 1, "hide", player.location);
+
+} else if (interpreted.type === "title_stand_and_fight") {
+  trackAction(player, "attack");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} fights against their fear and stands their ground.`,
+    player.location
+  );
+
+  updateReputation(player, { honor: 2 });
+  handleAttackAction(player, worldState, { type: "attack", target: "goblin" }, flavor);
+  advanceAndSync(worldState, 1, "stand-and-fight", player.location);
+
+} else if (interpreted.type === "title_drink_more") {
+  trackAction(player, "drink");
+
+  player.hp = Math.min(player.maxHp, player.hp + 5);
+
+  addWorldEvent(
+    worldState,
+    `${player.name} drinks even more.\nSomehow, they recover 5 HP.`,
+    player.location
+  );
+
+  updateReputation(player, { chaos: 1 });
+  advanceAndSync(worldState, 1, "drink-more", player.location);
+
+} else if (interpreted.type === "title_drunken_swing") {
+  trackAction(player, "attack");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} throws a reckless drunken swing.`,
+    player.location
+  );
+
+  handleAttackAction(player, worldState, { type: "attack", target: "goblin" }, flavor);
+  advanceAndSync(worldState, 1, "drunken-swing", player.location);
+
+} else if (interpreted.type === "title_sober_up") {
+  trackAction(player, "defend");
+
+  addWorldEvent(
+    worldState,
+    `${player.name} forces themselves to sober up and act responsibly.`,
+    player.location
+  );
+
+  updateReputation(player, { honor: 2, chaos: -2 });
+  advanceAndSync(worldState, 1, "sober-up", player.location);
     } else {
       maybeTriggerLocationEvent(worldState, player.location, player, "idle");
       addWorldEvent(worldState, `The Dungeon Master does not understand ${player.name}'s action yet.`, player.location);

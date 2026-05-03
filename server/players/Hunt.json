@@ -1,44 +1,44 @@
 {
   "name": "Hunt",
-  "location": "forest",
+  "location": "village",
   "hp": 97,
   "maxHp": 100,
   "inventory": [
     "Health Potion"
   ],
   "stats": {
-    "strength": 40,
-    "defense": 20,
-    "dexterity": 2,
+    "strength": 48,
+    "defense": 18,
+    "dexterity": 9,
     "presence": 8
   },
   "reputation": {
-    "title": "Trusted Voice",
-    "score": 89,
+    "title": "Unknown Figure",
+    "score": 150,
     "breakdown": [
       {
-        "title": "Trusted Voice",
-        "score": 89
-      },
-      {
-        "title": "Protector of the Realm",
-        "score": 65
+        "title": "Known Opportunist",
+        "score": 150
       },
       {
         "title": "Public Menace",
-        "score": 55
+        "score": 93
       },
       {
         "title": "Unknown Figure",
         "score": 5
       },
       {
-        "title": "Known Opportunist",
-        "score": -33
+        "title": "Trusted Voice",
+        "score": -20
+      },
+      {
+        "title": "Protector of the Realm",
+        "score": -54
       },
       {
         "title": "Unreliable Coward",
-        "score": -106
+        "score": -107
       }
     ]
   },
@@ -51,24 +51,24 @@
     "completedIntroQuest": true
   },
   "resources": {
-    "gold": 6,
-    "wood": 50,
-    "stone": 10
+    "gold": 14,
+    "wood": 240,
+    "stone": 62
   },
   "progression": {
     "actionCounts": {
-      "search": 27,
-      "wait": 23,
+      "search": 122,
+      "wait": 79,
       "defend": 142,
       "run": 2,
-      "attack": 195
+      "attack": 239
     },
     "actionPoints": {
-      "search": 27,
-      "wait": 23,
+      "search": 122,
+      "wait": 79,
       "defend": 142,
       "run": 2,
-      "attack": 195
+      "attack": 239
     }
   },
   "title": "Slayer",
@@ -78,10 +78,10 @@
   ],
   "traits": {
     "honor": 71,
-    "greed": 27,
+    "greed": 122,
     "fear": 1,
     "influence": 47,
-    "chaos": 65
+    "chaos": 79
   },
   "introLog": [],
   "instance": null,
@@ -92,11 +92,11 @@
   "titleDebug": [
     {
       "title": "Slayer",
-      "score": 415
+      "score": 521
     },
     {
       "title": "Guardian",
-      "score": 361
+      "score": 347
     }
   ]
 }
