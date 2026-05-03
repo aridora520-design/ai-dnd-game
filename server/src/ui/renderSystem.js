@@ -40,11 +40,11 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
     const inventoryHtml = !player.inventory || player.inventory.length === 0
       ? `<p>Your inventory is empty.</p>`
       : `
-        <ul>
+        <ul class="compact-list">
           ${player.inventory.map((item, index) => `
             <li>
-              ${item}
-              <a href="/use-item/${index}?player=${encodeURIComponent(playerName)}">Use</a>
+              <span>${item}</span>
+              <a class="mini-link" href="/use-item/${index}?player=${encodeURIComponent(playerName)}">Use</a>
             </li>
           `).join("")}
         </ul>
@@ -54,12 +54,11 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
       <div class="inventory-scroll">
         ${inventoryHtml}
       </div>
-      <hr>
-      <p>
-        <strong>Gold:</strong> ${player.resources?.gold || 0}<br>
-        <strong>Wood:</strong> ${player.resources?.wood || 0}<br>
-        <strong>Stone:</strong> ${player.resources?.stone || 0}
-      </p>
+      <div class="resource-grid">
+        <div><strong>Gold</strong><span>${player.resources?.gold || 0}</span></div>
+        <div><strong>Wood</strong><span>${player.resources?.wood || 0}</span></div>
+        <div><strong>Stone</strong><span>${player.resources?.stone || 0}</span></div>
+      </div>
     `;
   }
 
@@ -69,12 +68,11 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
     if (otherPlayers.length === 0) return `<p>No one else is here.</p>`;
 
     return `
-      <ul>
+      <ul class="compact-list">
         ${otherPlayers.map(other => `
           <li>
-            <strong>${other.name}</strong>
-            — HP ${other.hp}/${other.maxHp}
-            — Reputation: ${other.reputation?.title || "Unknown"}
+            <span><strong>${other.name}</strong><br>HP ${other.hp}/${other.maxHp}</span>
+            <small>${other.reputation?.title || "Unknown"}</small>
           </li>
         `).join("")}
       </ul>
@@ -101,22 +99,22 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
     if (!locationState) return lines;
 
     if (locationKey === "bar") {
-      const barFlags = locationState.stateFlags || {};
+      const flags = locationState.stateFlags || {};
 
-      if (barFlags.barRepairing) {
-        const dayText = barFlags.barClosedUntilDay != null ? `Day ${barFlags.barClosedUntilDay}` : "an unknown day";
-        const hourText = barFlags.barClosedUntilHour != null
-          ? `${String(barFlags.barClosedUntilHour).padStart(2, "0")}:00`
+      if (flags.barRepairing) {
+        const dayText = flags.barClosedUntilDay != null ? `Day ${flags.barClosedUntilDay}` : "an unknown day";
+        const hourText = flags.barClosedUntilHour != null
+          ? `${String(flags.barClosedUntilHour).padStart(2, "0")}:00`
           : "unknown time";
 
         lines.push("The bar is currently closed for repairs.");
         lines.push(`Estimated reopening: ${dayText}, ${hourText}.`);
       }
 
-      if (barFlags.barDamaged && !barFlags.barRepairing) lines.push("The bar still shows signs of recent damage.");
-      if (barFlags.barOnFire) lines.push("Flames or smoke still linger here.");
-      if (barFlags.thiefActive) lines.push("There are nervous whispers about a thief in the bar.");
-      if (barFlags.guardsWatchingBar) lines.push("The guards are keeping a close eye on this place.");
+      if (flags.barDamaged && !flags.barRepairing) lines.push("The bar still shows signs of recent damage.");
+      if (flags.barOnFire) lines.push("Flames or smoke still linger here.");
+      if (flags.thiefActive) lines.push("There are nervous whispers about a thief in the bar.");
+      if (flags.guardsWatchingBar) lines.push("The guards are keeping a close eye on this place.");
       if (player.flags?.bartenderBarred) lines.push("Bartender Rowan does not currently welcome you here.");
     }
 
@@ -224,15 +222,23 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
 
   function renderWorldStatusHtml({ barState, worldState, isTutorial }) {
     return `
-      <section class="card">
+      <section class="card world-card">
         <h3>World Status</h3>
 
-        <p>
-          <strong>Bar:</strong> ${barState.status || "unknown"}<br>
-          HP ${barState.hp ?? "?"}/${barState.maxHp ?? "?"}
-        </p>
+        <div class="status-line">
+          <span>Bar</span>
+          <strong>${barState.status || "unknown"}</strong>
+        </div>
 
-        <p><strong>Guard Alert:</strong> ${worldState.globalState?.guardsAlertLevel || 0}</p>
+        <div class="status-line">
+          <span>Bar HP</span>
+          <strong>${barState.hp ?? "?"}/${barState.maxHp ?? "?"}</strong>
+        </div>
+
+        <div class="status-line">
+          <span>Guard Alert</span>
+          <strong>${worldState.globalState?.guardsAlertLevel || 0}</strong>
+        </div>
 
         ${barState.status === "destroyed" ? `
           <div class="danger-box">
@@ -247,14 +253,11 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
 
             ${!isTutorial && barState.rebuildProject ? `
               <p><strong>Rebuild Progress:</strong> ${barState.rebuildProject.progress}/${barState.rebuildProject.required}</p>
-
-              <p><strong>Material Value:</strong></p>
               <ul>
                 <li>Gold = 3 progress each</li>
                 <li>Wood = 2 progress each</li>
                 <li>Stone = 4 progress each</li>
               </ul>
-
               <p class="muted">Type <b>rebuild bar</b> to contribute carried resources.</p>
             ` : ""}
           </div>
@@ -283,115 +286,187 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
     const quickActionsHtml = getQuickActionsHtml(player, worldState, isTutorial);
 
     return `
-      <div class="game-shell">
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>${player.name} — AI Dungeon Game</title>
+
         <style>
           * {
             box-sizing: border-box;
           }
 
+          html {
+            min-height: 100%;
+            background: #15110d;
+          }
+
           body {
+            min-height: 100%;
             margin: 0;
-            background: #f3efe7;
+            background:
+              radial-gradient(circle at top, #3a2c20 0%, #17120e 42%, #0f0c09 100%);
+            color: #f2eadc;
+            font-family: Georgia, serif;
+          }
+
+          a {
+            color: #f2c46b;
           }
 
           .game-shell {
-            max-width: 1400px;
+            max-width: 1440px;
+            min-height: 100vh;
             margin: 0 auto;
-            padding: 16px;
-            font-family: Georgia, serif;
-            color: #1d1a16;
+            padding: 14px;
+            padding-bottom: 24px;
           }
 
-          .game-header {
+          .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #222;
-            padding-bottom: 10px;
-            margin-bottom: 14px;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(242, 196, 107, 0.35);
+            border-radius: 16px;
+            background: rgba(25, 19, 14, 0.94);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.28);
           }
 
-          .game-header h1 {
+          .hero-name {
             margin: 0;
+            font-size: 26px;
+            letter-spacing: 1px;
           }
 
-          .game-header p {
-            margin: 4px 0 0 0;
+          .hero-meta,
+          .top-meta p {
+            margin: 4px 0 0;
+            color: #d5c4a8;
           }
 
-          .game-header-right {
+          .top-meta {
             text-align: right;
+            font-size: 14px;
           }
 
           .game-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 16px;
+            grid-template-columns: minmax(240px, 1fr) minmax(420px, 2fr) minmax(260px, 1fr);
+            gap: 14px;
             align-items: start;
+          }
+
+          .left-panel,
+          .right-panel,
+          .main-panel {
+            min-width: 0;
+          }
+
+          .card,
+          .scene-card,
+          .action-card,
+          .events-card {
+            border: 1px solid rgba(242, 196, 107, 0.28);
+            border-radius: 16px;
+            background: rgba(36, 28, 21, 0.92);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.22);
           }
 
           .card {
             padding: 12px;
-            border: 1px solid #aaa;
-            border-radius: 10px;
-            background: #f7f7f7;
             margin-bottom: 12px;
           }
 
-          .card h2,
-          .card h3 {
-            margin-top: 0;
-          }
-
-          .scene-card {
-            padding: 14px;
-            border: 1px solid #c98;
-            border-radius: 10px;
-            background: #fff7f2;
-            margin-bottom: 14px;
-          }
-
-          .action-card {
-            padding: 14px;
-            border: 1px solid #999;
-            border-radius: 10px;
-            background: #fafafa;
-            margin-bottom: 14px;
-          }
-
+          .scene-card,
+          .action-card,
           .events-card {
             padding: 14px;
-            border: 1px solid #bbb;
-            border-radius: 10px;
-            background: #fff;
+            margin-bottom: 12px;
           }
 
-          .event-list {
-            padding-left: 22px;
-            max-height: 320px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px 10px 10px 28px;
-            border-radius: 8px;
-            background: #fafafa;
+          h2,
+          h3 {
+            margin-top: 0;
+            color: #ffd98a;
+          }
+
+          p {
+            line-height: 1.45;
+          }
+
+          .scene-text,
+          .event-text {
+            white-space: pre-wrap;
+          }
+
+          .move-links a,
+          .card > a {
+            display: block;
+            padding: 10px;
+            margin: 6px 0;
+            border: 1px solid rgba(242, 196, 107, 0.25);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            text-decoration: none;
+          }
+
+          .move-links a:hover,
+          .card > a:hover {
+            background: rgba(242, 196, 107, 0.12);
+          }
+
+          .action-row {
+            display: flex;
+            gap: 8px;
           }
 
           .action-input {
-            padding: 12px;
-            width: 70%;
-            max-width: 620px;
+            flex: 1;
+            min-width: 0;
+            padding: 13px 14px;
+            border: 1px solid rgba(242, 196, 107, 0.35);
+            border-radius: 12px;
+            background: #100c09;
+            color: #f2eadc;
             font-size: 16px;
+            font-family: Georgia, serif;
+          }
+
+          .action-input::placeholder {
+            color: #9e8d72;
+          }
+
+          .action-button,
+          .quick-action-button,
+          .quick-action-link,
+          .mini-link {
+            border: 1px solid rgba(242, 196, 107, 0.42);
+            border-radius: 12px;
+            background: linear-gradient(180deg, #6a4b20, #372514);
+            color: #fff0c9;
+            cursor: pointer;
+            font-family: Georgia, serif;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
           }
 
           .action-button {
-            padding: 12px 18px;
+            padding: 13px 18px;
             font-size: 16px;
-            margin-left: 8px;
           }
 
           .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
             gap: 8px;
             margin-top: 10px;
           }
@@ -402,45 +477,117 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
 
           .quick-action-button,
           .quick-action-link {
-            display: inline-block;
-            padding: 8px 10px;
-            border: 1px solid #999;
-            border-radius: 8px;
-            background: #f1f1f1;
-            color: #111;
-            text-decoration: none;
-            cursor: pointer;
-            font-family: Georgia, serif;
-            font-size: 14px;
+            display: block;
+            width: 100%;
+            min-height: 44px;
+            padding: 11px 10px;
+            text-align: center;
+            font-size: 15px;
           }
 
           .quick-action-button:hover,
-          .quick-action-link:hover {
-            background: #e4e4e4;
+          .quick-action-link:hover,
+          .action-button:hover {
+            filter: brightness(1.12);
           }
 
-          .danger-box {
+          .event-list {
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 10px 10px 10px 28px;
+            border: 1px solid rgba(242, 196, 107, 0.18);
+            border-radius: 12px;
+            background: rgba(0,0,0,0.18);
+          }
+
+          .event-list li {
+            margin-bottom: 10px;
+          }
+
+          .event-list pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: Georgia, serif;
+          }
+
+          .compact-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+          }
+
+          .compact-list li {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(242, 196, 107, 0.14);
+          }
+
+          .compact-list li:last-child {
+            border-bottom: none;
+          }
+
+          .mini-link {
+            padding: 5px 8px;
+            font-size: 13px;
+          }
+
+          .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+          }
+
+          .resource-grid div,
+          .stat-grid div {
+            padding: 9px;
+            border: 1px solid rgba(242, 196, 107, 0.18);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            text-align: center;
+          }
+
+          .resource-grid strong,
+          .resource-grid span,
+          .stat-grid strong,
+          .stat-grid span {
+            display: block;
+          }
+
+          .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+
+          .status-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(242, 196, 107, 0.14);
+          }
+
+          .status-line:last-child {
+            border-bottom: none;
+          }
+
+          .danger-box,
+          .local-status {
             padding: 10px;
-            border: 1px solid #d99;
-            border-radius: 8px;
-            background: #fff5f2;
+            border: 1px solid rgba(255, 120, 80, 0.45);
+            border-radius: 12px;
+            background: rgba(90, 31, 20, 0.35);
           }
 
           .local-status {
-            margin: 12px 0;
-            padding: 10px;
-            border: 1px solid #bbb;
-            border-radius: 8px;
-            background: #fcfcfc;
-          }
-
-          .local-status p,
-          .result-card p {
-            margin: 6px 0;
+            margin-top: 12px;
           }
 
           .muted {
-            color: #555;
+            color: #c9b895;
           }
 
           .inventory-scroll {
@@ -448,59 +595,129 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
             overflow-y: auto;
           }
 
-          @media (max-width: 800px) {
+          .mobile-bottom-action {
+            display: none;
+          }
+
+          @media (max-width: 900px) {
             .game-shell {
               padding: 10px;
+              padding-bottom: 128px;
             }
 
-            .game-header {
-              display: block;
-              text-align: left;
+            .top-bar {
+              align-items: flex-start;
+              border-radius: 14px;
             }
 
-            .game-header-right {
-              text-align: left;
-              margin-top: 8px;
+            .hero-name {
+              font-size: 22px;
+            }
+
+            .top-meta {
+              font-size: 13px;
             }
 
             .game-grid {
               grid-template-columns: 1fr;
             }
 
-            .action-input {
-              width: 100%;
-              max-width: none;
-              margin-bottom: 8px;
+            .left-panel {
+              order: 1;
+            }
+
+            .main-panel {
+              order: 2;
+            }
+
+            .right-panel {
+              order: 3;
+            }
+
+            .scene-card {
+              border-color: rgba(255, 217, 138, 0.45);
+            }
+
+            .desktop-action-form {
+              display: none;
+            }
+
+            .mobile-bottom-action {
+              position: fixed;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              z-index: 50;
+              display: block;
+              padding: 10px;
+              padding-bottom: calc(10px + env(safe-area-inset-bottom));
+              border-top: 1px solid rgba(242, 196, 107, 0.35);
+              background: rgba(18, 13, 9, 0.96);
+              backdrop-filter: blur(10px);
+              box-shadow: 0 -10px 24px rgba(0,0,0,0.35);
+            }
+
+            .mobile-bottom-action .action-row {
+              display: grid;
+              grid-template-columns: 1fr auto;
             }
 
             .action-button {
-              width: 100%;
-              margin-left: 0;
+              min-width: 72px;
             }
 
             .quick-actions {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
+              grid-template-columns: repeat(2, 1fr);
             }
 
             .quick-action-button,
             .quick-action-link {
-              width: 100%;
-              text-align: center;
+              min-height: 48px;
+              font-size: 15px;
             }
 
             .event-list {
               max-height: 260px;
             }
+
+            .stat-grid {
+              grid-template-columns: repeat(2, 1fr);
+            }
+          }
+
+          @media (min-width: 901px) {
+            .desktop-sticky {
+              position: sticky;
+              top: 92px;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .top-bar {
+              display: block;
+            }
+
+            .top-meta {
+              text-align: left;
+              margin-top: 8px;
+            }
+
+            .quick-actions {
+              grid-template-columns: 1fr;
+            }
+
+            .resource-grid {
+              grid-template-columns: 1fr;
+            }
           }
         </style>
 
-        <div class="game-header">
+        <div class="top-bar">
           <div>
-            <h1>${player.name.toUpperCase()}</h1>
-            <p><strong>Location:</strong> ${player.location.toUpperCase()}</p>
+            <h1 class="hero-name">${player.name.toUpperCase()}</h1>
+            <p class="hero-meta"><strong>Location:</strong> ${player.location.toUpperCase()}</p>
           </div>
-          <div class="game-header-right">
+          <div class="top-meta">
             <p><strong>${isTutorial ? "Dream Time" : "World Time"}:</strong> ${formatWorldTime(worldState)}</p>
             <p><strong>HP:</strong> ${player.hp}/${player.maxHp}</p>
           </div>
@@ -509,39 +726,41 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
         ${tutorialBanner}
 
         <div class="game-grid">
-          <aside>
-            <section class="card">
-              <h3>Move</h3>
-              ${links || "<p>No exits.</p>"}
-            </section>
-
-            ${!isTutorial || playerName === "Hunt" ? `
+          <aside class="left-panel">
+            <div class="desktop-sticky">
               <section class="card">
-                <h3>World Controls</h3>
-                ${!isTutorial ? `<a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a><br>` : ""}
-                <a href="/reset-world?player=${encodeURIComponent(playerName)}" onclick="return confirm('Reset the whole world?')">Reset World</a>
+                <h3>Move</h3>
+                <div class="move-links">${links || "<p>No exits.</p>"}</div>
               </section>
-            ` : ""}
 
-            <section class="card">
-              <h3>Other Players</h3>
-              ${isTutorial ? `<p>This is an old memory. No other real players are here.</p>` : getOtherPlayersHtml(player)}
-            </section>
+              ${!isTutorial || playerName === "Hunt" ? `
+                <section class="card">
+                  <h3>World Controls</h3>
+                  ${!isTutorial ? `<a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a>` : ""}
+                  <a href="/reset-world?player=${encodeURIComponent(playerName)}" onclick="return confirm('Reset the whole world?')">Reset World</a>
+                </section>
+              ` : ""}
 
-            ${worldStatusHtml}
+              <section class="card">
+                <h3>Other Players</h3>
+                ${isTutorial ? `<p>This is an old memory. No other real players are here.</p>` : getOtherPlayersHtml(player)}
+              </section>
+
+              ${worldStatusHtml}
+            </div>
           </aside>
 
-          <main>
+          <main class="main-panel">
             <section class="scene-card">
               <h2>${activeEvent ? "Current Event" : "Scene"}</h2>
               ${
                 activeEvent
                   ? `
                     <h3>${activeEvent.title || "Something is happening"}</h3>
-                    <p style="white-space:pre-wrap; line-height:1.45;">${activeEvent.text}</p>
+                    <p class="scene-text">${activeEvent.text}</p>
                   `
                   : `
-                    <p style="line-height:1.45;">${location.description}</p>
+                    <p class="scene-text">${location.description}</p>
                     ${localStatusHtml}
                   `
               }
@@ -550,21 +769,21 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
             <section class="action-card">
               <h2>What do you do?</h2>
 
-              <form method="POST" action="/action?player=${encodeURIComponent(playerName)}">
-                <input
-                  class="action-input"
-                  type="text"
-                  name="action"
-                  placeholder="Type your action..."
-                  autocomplete="off"
-                  autofocus
-                />
-                <button type="submit" class="action-button">Act</button>
+              <form class="desktop-action-form" method="POST" action="/action?player=${encodeURIComponent(playerName)}">
+                <div class="action-row">
+                  <input
+                    class="action-input"
+                    type="text"
+                    name="action"
+                    placeholder="Type your action..."
+                    autocomplete="off"
+                    autofocus
+                  />
+                  <button type="submit" class="action-button">Act</button>
+                </div>
               </form>
 
-              <p class="muted">
-                Try: look, help, attack goblin, defend, run, search, drink, eat, threaten, repair
-              </p>
+              <p class="muted">Tap a quick action or type your own command.</p>
 
               <h3>Quick Actions</h3>
               ${quickActionsHtml}
@@ -578,40 +797,55 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
             </section>
           </main>
 
-          <aside>
-            <section class="card">
-              <h3>Character</h3>
-              <p><strong>Title:</strong> ${player.title}</p>
-              <p><strong>HP:</strong> ${player.hp}/${player.maxHp}</p>
-              <p><strong>Stats:</strong><br>
-                STR ${player.stats.strength}<br>
-                DEX ${player.stats.dexterity}<br>
-                DEF ${player.stats.defense}<br>
-                PRE ${player.stats.presence}
-              </p>
-              <p><strong>Skills:</strong> ${player.skills.length > 0 ? player.skills.join(", ") : "None"}</p>
-              <p><strong>Reputation:</strong> ${player.reputation?.title || "Unknown"}</p>
-              ${reputationReaction ? `<p><em>${reputationReaction}</em></p>` : ""}
-            </section>
+          <aside class="right-panel">
+            <div class="desktop-sticky">
+              <section class="card">
+                <h3>Character</h3>
+                <p><strong>Title:</strong> ${player.title}</p>
+                <p><strong>Reputation:</strong> ${player.reputation?.title || "Unknown"}</p>
+                ${reputationReaction ? `<p><em>${reputationReaction}</em></p>` : ""}
 
-            <section class="card">
-              <h3>Traits</h3>
-              <p>
-                Honor ${player.traits.honor}<br>
-                Greed ${player.traits.greed}<br>
-                Fear ${player.traits.fear}<br>
-                Influence ${player.traits.influence}<br>
-                Chaos ${player.traits.chaos}
-              </p>
-            </section>
+                <div class="stat-grid">
+                  <div><strong>STR</strong><span>${player.stats.strength}</span></div>
+                  <div><strong>DEX</strong><span>${player.stats.dexterity}</span></div>
+                  <div><strong>DEF</strong><span>${player.stats.defense}</span></div>
+                  <div><strong>PRE</strong><span>${player.stats.presence}</span></div>
+                </div>
 
-            <section class="card">
-              <h3>Inventory & Resources</h3>
-              ${getInventoryHtml(player, playerName)}
-            </section>
+                <p><strong>Skills:</strong><br>${player.skills.length > 0 ? player.skills.join(", ") : "None"}</p>
+              </section>
+
+              <section class="card">
+                <h3>Traits</h3>
+                <div class="status-line"><span>Honor</span><strong>${player.traits.honor}</strong></div>
+                <div class="status-line"><span>Greed</span><strong>${player.traits.greed}</strong></div>
+                <div class="status-line"><span>Fear</span><strong>${player.traits.fear}</strong></div>
+                <div class="status-line"><span>Influence</span><strong>${player.traits.influence}</strong></div>
+                <div class="status-line"><span>Chaos</span><strong>${player.traits.chaos}</strong></div>
+              </section>
+
+              <section class="card">
+                <h3>Inventory & Resources</h3>
+                ${getInventoryHtml(player, playerName)}
+              </section>
+            </div>
           </aside>
         </div>
+
+        <form class="mobile-bottom-action" method="POST" action="/action?player=${encodeURIComponent(playerName)}">
+          <div class="action-row">
+            <input
+              class="action-input"
+              type="text"
+              name="action"
+              placeholder="Type action..."
+              autocomplete="off"
+            />
+            <button type="submit" class="action-button">Act</button>
+          </div>
+        </form>
       </div>
+      </html>
     `;
   }
 

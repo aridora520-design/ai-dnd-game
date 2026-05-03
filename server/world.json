@@ -52,30 +52,7 @@
   ],
   "locationStates": {
     "village": {
-      "activeEvent": {
-        "id": "village_guard_murmur",
-        "name": "Guard Murmur",
-        "chainId": "village_consequence",
-        "phase": 1,
-        "location": "village",
-        "phaseLabel": "murmur",
-        "createdAt": 1777779334656,
-        "expiresInMs": 600000,
-        "text": "A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
-        "involvedNpc": [
-          "Old Villager",
-          "Passing Guard"
-        ],
-        "tags": [
-          "village",
-          "guard",
-          "rumor"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": null,
-        "nextOnFail": null,
-        "nextOnIgnore": null
-      },
+      "activeEvent": null,
       "recentHistory": [
         "Hunt travels to village.",
         "[EVENT — VILLAGE] A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
