@@ -1,62 +1,69 @@
 {
   "time": {
-    "day": 23,
-    "hour": 21,
-    "turn": 541
+    "day": 1,
+    "hour": 20,
+    "turn": 12
   },
   "goblinAlive": true,
-  "goblinHp": 12,
-  "goblinCorpses": 3,
-  "forestPotionFound": true,
+  "goblinHp": 40,
+  "goblinCorpses": 0,
+  "forestPotionFound": false,
   "eventLog": [
-    "Hunt travels to village.",
-    "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
-    "Hunt attempts a ruthless execution strike.",
-    "Hunt attempts: \"Execute\"",
-    "Hunt travels to bar.",
-    "[EVENT — VILLAGE] A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
-    "Hunt travels to village.",
-    "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
-    "The guards interpret the silence as guilt and grow even more suspicious.",
+    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+    "Hunt attempts: \"help\"",
+    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+    "Hunt helps calm the situation. The guards lower their suspicion.",
+    "Hunt attempts: \"help\"",
+    "Hunt feels the pressure of the crackdown as guards watch every movement on the street.",
+    "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
+    "Hunt hesitates while the guards take control of the scene.",
     "Hunt travels to street.",
-    "Hunt searches the forest and gathers 1 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 1 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 3 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 3 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 3 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 1 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 3 wood and 1 stone.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 1 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 1 wood.",
-    "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
-    "Hunt attempts: \"search\""
+    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+    "Hunt travels to village.",
+    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+    "Hunt attempts: \"help\"",
+    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
+    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
+    "The bar takes 15 damage. HP: 60/100. Status: damaged.",
+    "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+    "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them.",
+    "The bar takes 25 damage. HP: 75/100. Status: standing.",
+    "Hunt attempts: \"barfight\"",
+    "Hunt waits and watches the world move around them.",
+    "Hunt attempts: \"wait\"",
+    "[CHAIN EVENT — STREET] The chase spills into the street. The thief darts between carts and townsfolk, trying to disappear.",
+    "Hunt lets the moment pass. The thief escapes into the street.",
+    "[EVENT — BAR] A quick-handed thief snatches a coin purse and bolts toward the door.",
+    "Hunt travels to bar.",
+    "The world begins. The village waits in silence."
   ],
   "locationStates": {
     "village": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "village_tavern_gossip",
+        "name": "Tavern Gossip",
+        "chainId": "village_consequence",
+        "phase": 1,
+        "location": "village",
+        "phaseLabel": "gossip",
+        "createdAt": 1777870354759,
+        "expiresInMs": 600000,
+        "text": "The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+        "involvedNpc": [
+          "Old Villager",
+          "Worried Farmer"
+        ],
+        "tags": [
+          "village",
+          "gossip"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": null,
+        "nextOnFail": null,
+        "nextOnIgnore": null
+      },
       "recentHistory": [
-        "Hunt travels to village.",
-        "[EVENT — VILLAGE] A pair of villagers lower their voices when they see a guard pass nearby. The street troubles are being discussed.",
-        "Hunt travels to village.",
+        "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
         "Hunt travels to village."
       ],
       "npcs": [
@@ -76,7 +83,7 @@
         "crowdUneasy": false,
         "hunterSavedRumor": false,
         "hunterAbandonedRumor": false,
-        "tavernTroubleRumor": false,
+        "tavernTroubleRumor": true,
         "rebuildingActive": false,
         "rebuildingEndsAtTurn": null
       }
@@ -84,10 +91,16 @@
     "bar": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt\n\n      <div class=\"card result-card\">\n        <h3>Action: Attack,Outcome: Invalid,Target: None</h3>\n        <p>There is nothing here to attack.</p>\n      </div>\n    ",
-        "Hunt attempts a ruthless execution strike.",
-        "Hunt attempts: \"Execute\"",
-        "Hunt travels to bar."
+        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+        "Hunt attempts: \"help\"",
+        "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
+        "The bar takes 15 damage. HP: 60/100. Status: damaged.",
+        "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
+        "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them.",
+        "The bar takes 25 damage. HP: 75/100. Status: standing.",
+        "Hunt attempts: \"barfight\"",
+        "Hunt waits and watches the world move around them.",
+        "Hunt attempts: \"wait\""
       ],
       "npcs": [
         "Bartender Rowan",
@@ -104,8 +117,10 @@
         "contributions": 0
       },
       "stateFlags": {
-        "barDamaged": false,
-        "bartenderHostileTo": [],
+        "barDamaged": true,
+        "bartenderHostileTo": [
+          "Hunt"
+        ],
         "barOnFire": false,
         "thiefActive": false,
         "guardsWatchingBar": false,
@@ -118,53 +133,24 @@
         "barRepairProgress": 0,
         "barRepairNeeded": 0
       },
-      "hp": 100,
+      "hp": 60,
       "maxHp": 100,
       "form": "old_bar",
-      "status": "standing"
+      "status": "damaged"
     },
     "street": {
-      "activeEvent": {
-        "id": "street_cart",
-        "name": "Runaway Cart",
-        "chainId": "cart_chain",
-        "phase": 1,
-        "location": "street",
-        "phaseLabel": "runaway",
-        "createdAt": 1777779331283,
-        "expiresInMs": 600000,
-        "text": "A horse panics. A loaded cart jerks loose and barrels down the street.",
-        "involvedNpc": [
-          "Cart Driver",
-          "Town Guard"
-        ],
-        "tags": [
-          "environment",
-          "street"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": {
-          "eventId": "street_debris",
-          "location": "street"
-        },
-        "nextOnFail": {
-          "eventId": "street_debris",
-          "location": "street"
-        },
-        "nextOnIgnore": {
-          "eventId": "street_debris",
-          "location": "street"
-        }
-      },
+      "activeEvent": null,
       "recentHistory": [
-        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
-        "The guards interpret the silence as guilt and grow even more suspicious.",
+        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+        "Hunt attempts: \"help\"",
+        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
+        "Hunt helps calm the situation. The guards lower their suspicion.",
+        "Hunt attempts: \"help\"",
+        "Hunt feels the pressure of the crackdown as guards watch every movement on the street.",
+        "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
+        "Hunt hesitates while the guards take control of the scene.",
         "Hunt travels to street.",
-        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
-        "Hunt travels to street.",
-        "Hunt waits and watches the world move around them.",
-        "Hunt attempts: \"wait\"",
-        "Hunt travels to street."
+        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble."
       ],
       "npcs": [
         "Town Guard",
@@ -187,18 +173,7 @@
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [
-        "Hunt searches the forest and gathers 1 wood.",
-        "Hunt attempts: \"search\"",
-        "Hunt searches the forest and gathers 2 wood and 1 stone.",
-        "Hunt attempts: \"search\"",
-        "Hunt searches the forest and gathers 2 wood.",
-        "Hunt attempts: \"search\"",
-        "Hunt searches the forest and gathers 1 wood and 1 stone.",
-        "Hunt attempts: \"search\"",
-        "Hunt searches the forest and gathers 3 wood and 1 stone.",
-        "Hunt attempts: \"search\""
-      ],
+      "recentHistory": [],
       "npcs": [
         "Goblin"
       ],
@@ -213,22 +188,20 @@
       "stateFlags": {
         "woundedHunterPresent": false,
         "goblinReinforcementsIncoming": false,
-        "forestDanger": 3,
+        "forestDanger": 0,
         "reinforcementAmbushPending": false,
         "forestStayCounter": 0,
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
-        "goblinCorpsesDecayAtTurn": null,
-        "pendingForestEncounter": false
+        "goblinCorpsesDecayAtTurn": null
       }
     }
   },
   "globalState": {
     "villagersOnEdge": false,
-    "recentViolence": 3,
-    "guardsAlertLevel": 1,
+    "recentViolence": 0,
+    "guardsAlertLevel": 0,
     "hunterSavedBy": null,
     "hunterAbandonedBy": null
-  },
-  "goblinType": "Goblin Scout"
+  }
 }

@@ -6,9 +6,6 @@ const {
   recalculateActorProgression
 } = require("../systems/actorProgressionSystem");
 
-const { updateTraits } = require("../systems/traitSystem");
-
-
 const { createTimeSystem } = require("../systems/timeSystem");
 const { createActionResolutionSystem } = require("../systems/actionResolutionSystem");
 const { createCombatSystem } = require("../systems/combatSystem");
@@ -436,21 +433,19 @@ function trackAction(player, actionType) {
         formatWorldTime,
         getReputationReaction,
         mode: "tutorial",
-        tutorialBanner: `
-        <p>
-  <a href="/skip-tutorial?player=${encodeURIComponent(playerName)}"
-     style="display:inline-block; padding:8px 12px; border:1px solid #777; border-radius:8px; background:#fff; text-decoration:none;">
+       tutorialBanner: `
+  <a class="tutorial-skip" href="/skip-tutorial?player=${encodeURIComponent(playerName)}">
     Skip Tutorial
   </a>
-</p>
-          <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
-            <strong>Old Tale / Dream Memory</strong>
-            <p style="margin:6px 0;">
-              You are living through Rowan's grandfather's story. Your choices here teach how the world works,
-              but the real shared world begins when you wake.
-            </p>
-          </div>
-        `
+
+  <div class="tutorial-memory">
+    <strong>Old Tale / Dream Memory</strong>
+    <p>
+      You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+      but the real shared world begins when you wake.
+    </p>
+  </div>
+`
       }));
     }
   
@@ -608,13 +603,41 @@ if (titleActionMap[lowerAction]) {
       return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
     }
   
-    const handledByEvent = handleActiveEventReaction(player, worldState, rawAction, reaction);
-    if (handledByEvent) {
-      advanceAndSync(worldState, 1, "event-reaction", player.location);
-      savePlayer(player);
-      saveWorldState(worldState);
-      return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-    }
+  
+   const handledByEvent = handleActiveEventReaction(player, worldState, rawAction, reaction);
+
+if (handledByEvent) {
+  const eventId = worldState.locationStates[player.location]?.activeEvent?.id || "";
+
+  if (
+    reaction.intent === "help" ||
+    reaction.intent === "defend" ||
+    lowerAction.includes("put out fire") ||
+    lowerAction.includes("stop fire") ||
+    lowerAction.includes("fight fire") ||
+    lowerAction.includes("catch thief") ||
+    lowerAction.includes("stop thief")
+  ) {
+    trackAction(player, "defend");
+  } else if (
+    reaction.intent === "talk" ||
+    lowerAction.includes("calm") ||
+    lowerAction.includes("settle")
+  ) {
+    trackAction(player, "help");
+  } else if (reaction.intent === "attack") {
+    trackAction(player, "attack");
+  } else if (reaction.intent === "threaten") {
+    trackAction(player, "threaten");
+  } else if (reaction.intent === "flee") {
+    trackAction(player, "run");
+  }
+
+  advanceAndSync(worldState, 1, "event-reaction", player.location);
+  savePlayer(player);
+  saveWorldState(worldState);
+  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+}
   
     addWorldEvent(worldState, `${player.name} attempts: "${rawAction}"`, player.location);
   
@@ -626,34 +649,48 @@ if (titleActionMap[lowerAction]) {
       advanceAndSync(worldState, 1, "look", player.location);
   
     } else if (interpreted.type === "help") {
-      const recoveryActions = getLocationRecoveryActions(worldState, player.location);
-      const recoveryHelpText = recoveryActions.length > 0
-        ? `\n\nRECOVERY ACTIONS HERE\n- ${recoveryActions.join("\n- ")}`
-        : "";
-  
-      const helpText = `COMMANDS
-  - look: inspect your surroundings
-  - attack goblin / shoot goblin: attack in combat
-  - defend: reduce incoming damage and build honor
-  - run: try to escape combat
-  - search: search the area
-  - rest: recover HP in the bar
-  - drink: have a drink in the bar
-  - eat: have a meal in the bar
-  - barfight: start trouble in the bar
-  - say hello: speak to nearby players
-  - threaten: intimidate others in the right setting
-  - repair / help repair / donate wood / clear rubble: special recovery actions when a place is damaged
-  - rebuild bar: contribute to rebuilding the destroyed bar
-  
-  NEW EVENT LOOP
-  - enter a place
-  - something may happen
-  - react in free text
-  - your reaction changes the world${recoveryHelpText}`;
-  
-      addWorldEvent(worldState, `${player.name} asks for guidance.\n${helpText}`, player.location);
-      advanceAndSync(worldState, 1, "help", player.location);
+    
+  trackAction(player, "help");
+
+ const currentAlert = worldState.globalState.guardsAlertLevel || 0;
+
+if (currentAlert > 0) {
+  worldState.globalState.guardsAlertLevel = Math.max(0, currentAlert - 1);
+
+  addWorldEvent(
+    worldState,
+    `${player.name} helps calm the situation. The guards lower their suspicion.`,
+    player.location
+  );
+}
+
+  const recoveryActions = getLocationRecoveryActions(worldState, player.location);
+  const recoveryHelpText = recoveryActions.length > 0
+    ? `\n\nRECOVERY ACTIONS HERE\n- ${recoveryActions.join("\n- ")}`
+    : "";
+
+  const helpText = `COMMANDS
+- look
+- attack
+- defend
+- run
+- search
+- rest
+- drink
+- eat
+- threaten
+- repair
+- rebuild bar
+
+Helping also calms guards when they are on alert.${recoveryHelpText}`;
+
+  addWorldEvent(
+    worldState,
+    `${player.name} offers help.\n${helpText}`,
+    player.location
+  );
+
+  advanceAndSync(worldState, 1, "help", player.location);
   
     } else if (interpreted.type === "attack") {
       trackAction(player, "attack");
@@ -672,7 +709,7 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "search") {
       trackAction(player, "search");
-      updateTraits(player, { greed: 1 });
+      
       
      
   
@@ -702,7 +739,6 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "drink") {
       trackAction(player, "drink");
-      updateTraits(player, { chaos: 1, honor: -1 });
       
   
       if (player.location !== "bar") {
@@ -718,7 +754,7 @@ if (titleActionMap[lowerAction]) {
   
         addWorldEvent(
           worldState,
-          `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nHonor +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: Better supplies improve recovery." : ""}`,
+          `${player.name} enjoys a quiet drink.\nRecovers ${healAmount} HP.\nChaos +1.${barState.hp >= barState.maxHp ? "\nFull Bar Bonus: Better supplies improve recovery." : ""}`,
           player.location
         );
   
@@ -729,7 +765,7 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "eat") {
       trackAction(player, "eat");
-      updateTraits(player, { honor: 1 });
+      
       
       
   
@@ -757,7 +793,7 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "threaten") {
       trackAction(player, "threaten");
-      updateTraits(player, { influence: 1, chaos: 1, honor: -1 });
+     
       
       
   
@@ -793,10 +829,6 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "barfight") {
       trackAction(player, "barfight");
-      updateTraits(player, { chaos: 2, honor: -1 });
-      
-     
-  
       if (player.location !== "bar") {
         addWorldEvent(worldState, `${player.name} looks for trouble, but no one is around.`, player.location);
       } else if (isLocationDestroyed(worldState, "bar")) {
@@ -804,8 +836,7 @@ if (titleActionMap[lowerAction]) {
       } else {
         const damage = 8;
         player.hp = Math.max(0, player.hp - damage);
-        updateReputation(player, { honor: -2, chaos: 2, intimidation: 2 });
-  
+      
         const barDamageResult = damageLocation(worldState, "bar", 25);
         addWorldEvent(worldState, barDamageResult.text, "bar");
   
@@ -816,7 +847,7 @@ if (titleActionMap[lowerAction]) {
   
         addWorldEvent(
           worldState,
-          `${player.name} starts a bar fight!\nTakes ${damage} damage.\nHonor -2.\nChaos +2.\nBartender Rowan has had enough of them.`,
+          `${player.name} starts a bar fight!\nTakes ${damage} damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them.`,
           player.location
         );
   
@@ -830,10 +861,7 @@ if (titleActionMap[lowerAction]) {
   
     } else if (interpreted.type === "repair") {
       trackAction(player, "repair");
-      updateTraits(player, { honor: 1, chaos: -1 });
       
-      
-  
       let targetLocation = interpreted.target || player.location;
   
       if (
@@ -1285,15 +1313,19 @@ if (titleActionMap[lowerAction]) {
       formatWorldTime,
       getReputationReaction,
       mode: "tutorial",
-      tutorialBanner: `
-        <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
-          <strong>Old Tale / Dream Memory</strong>
-          <p style="margin:6px 0;">
-            You are living through Rowan's grandfather's story. Your choices here teach how the world works,
-            but the real shared world begins when you wake.
-          </p>
-        </div>
-      `
+   tutorialBanner: `
+  <a class="tutorial-skip" href="/skip-tutorial?player=${encodeURIComponent(playerName)}">
+    Skip Tutorial
+  </a>
+
+  <div class="tutorial-memory">
+    <strong>Old Tale / Dream Memory</strong>
+    <p>
+      You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+      but the real shared world begins when you wake.
+    </p>
+  </div>
+`
     }));
   }
     const worldState = loadWorldState();
@@ -1357,15 +1389,19 @@ if (titleActionMap[lowerAction]) {
       formatWorldTime,
       getReputationReaction,
       mode: "tutorial",
-      tutorialBanner: `
-        <div style="padding:12px; border:1px solid #8a6; border-radius:8px; background:#f4fff1; margin-bottom:16px;">
-          <strong>Old Tale / Dream Memory</strong>
-          <p style="margin:6px 0;">
-            You are living through Rowan's grandfather's story. Your choices here teach how the world works,
-            but the real shared world begins when you wake.
-          </p>
-        </div>
-      `
+    tutorialBanner: `
+  <a class="tutorial-skip" href="/skip-tutorial?player=${encodeURIComponent(playerName)}">
+    Skip Tutorial
+  </a>
+
+  <div class="tutorial-memory">
+    <strong>Old Tale / Dream Memory</strong>
+    <p>
+      You are living through Rowan's grandfather's story. Your choices here teach how the world works,
+      but the real shared world begins when you wake.
+    </p>
+  </div>
+`
     }));
   }
     const worldState = loadWorldState();

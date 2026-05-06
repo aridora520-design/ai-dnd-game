@@ -710,6 +710,45 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
               grid-template-columns: 1fr;
             }
           }
+            .tutorial-banner {
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(140, 255, 170, 0.28);
+  background: rgba(18, 36, 22, 0.75);
+}
+
+.tutorial-skip {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 196, 107, 0.45);
+  background: rgba(40, 30, 18, 0.95);
+  color: #ffd98a;
+  text-decoration: none;
+}
+
+.tutorial-memory {
+  padding: 14px;
+  border-radius: 12px;
+
+  background: #0f2a17;  /* DARK GREEN (solid, not transparent) */
+  border: 1px solid #2f7a4a;
+
+  color: #ffffff;       /* PURE WHITE TEXT */
+}
+
+.tutorial-memory strong {
+  color: #9dffb0;
+  font-size: 16px;
+}
+
+.tutorial-memory p {
+  color: #eaffea;
+  margin-top: 6px;
+  line-height: 1.5;
+}
         </style>
 
         <div class="top-bar">
@@ -723,7 +762,11 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
           </div>
         </div>
 
-        ${tutorialBanner}
+       ${tutorialBanner ? `
+  <div class="tutorial-banner">
+    ${tutorialBanner}
+  </div>
+` : ""}
 
         <div class="game-grid">
           <aside class="left-panel">

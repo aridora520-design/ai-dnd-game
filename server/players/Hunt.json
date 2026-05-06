@@ -1,102 +1,81 @@
 {
   "name": "Hunt",
-  "location": "village",
-  "hp": 97,
+  "location": "street",
+  "hp": 92,
   "maxHp": 100,
-  "inventory": [
-    "Health Potion"
-  ],
+  "inventory": [],
   "stats": {
-    "strength": 48,
-    "defense": 18,
-    "dexterity": 9,
-    "presence": 8
+    "strength": 2,
+    "defense": 1,
+    "dexterity": 3,
+    "presence": 2
   },
   "reputation": {
-    "title": "Unknown Figure",
-    "score": 150,
+    "title": "Protector of the Realm",
+    "score": 6,
     "breakdown": [
       {
-        "title": "Known Opportunist",
-        "score": 150
+        "title": "Protector of the Realm",
+        "score": 6
       },
       {
-        "title": "Public Menace",
-        "score": 93
+        "title": "Trusted Voice",
+        "score": 5
       },
       {
         "title": "Unknown Figure",
         "score": 5
       },
       {
-        "title": "Trusted Voice",
-        "score": -20
+        "title": "Public Menace",
+        "score": -1
       },
       {
-        "title": "Protector of the Realm",
-        "score": -54
+        "title": "Known Opportunist",
+        "score": -2
       },
       {
         "title": "Unreliable Coward",
-        "score": -107
+        "score": -2
       }
     ]
   },
   "flags": {
     "knownTroublemaker": false,
     "helpedTownsfolk": false,
-    "bartenderBarred": false,
+    "bartenderBarred": true,
     "blockedFromStreet": false,
     "wantedByGuards": false,
     "completedIntroQuest": true
   },
   "resources": {
-    "gold": 14,
-    "wood": 240,
-    "stone": 62
+    "gold": 0,
+    "wood": 0,
+    "stone": 0
   },
   "progression": {
     "actionCounts": {
-      "search": 122,
-      "wait": 79,
-      "defend": 142,
-      "run": 2,
-      "attack": 239
+      "wait": 1,
+      "barfight": 1,
+      "help": 3,
+      "defend": 2
     },
     "actionPoints": {
-      "search": 122,
-      "wait": 79,
-      "defend": 142,
-      "run": 2,
-      "attack": 239
+      "wait": 1,
+      "barfight": 1,
+      "help": 3,
+      "defend": 2
     }
   },
-  "title": "Slayer",
-  "skills": [
-    "Heavy Strike",
-    "Blood Rush"
-  ],
+  "title": "Wanderer",
+  "skills": [],
   "traits": {
-    "honor": 71,
-    "greed": 122,
-    "fear": 1,
-    "influence": 47,
-    "chaos": 79
+    "honor": 3,
+    "greed": 0,
+    "fear": 0,
+    "influence": 0,
+    "chaos": 2
   },
   "introLog": [],
-  "instance": null,
-  "introQuest": {
-    "completed": true,
-    "active": false
-  },
-  "titleDebug": [
-    {
-      "title": "Slayer",
-      "score": 521
-    },
-    {
-      "title": "Guardian",
-      "score": 347
-    }
-  ]
+  "instance": null
 }

@@ -351,7 +351,7 @@ function createCombatSystem({
       return;
     }
 
-    applyCombatProgression(player, "attack", { chaos: 1 });
+   
 
     addWorldEvent(worldState, `${player.name}: ${narrateAttackIntro(interpreted.style, flavor)}`, player.location);
 
@@ -579,7 +579,7 @@ addWorldEvent(
       return;
     }
 
-    applyCombatProgression(player, "defend", { honor: 1, chaos: -1 });
+    
 
     const defendBonus =
       (hasSkill(player, "stand_ground") ? 2 : 0) +
@@ -622,7 +622,7 @@ addWorldEvent(
       return;
     }
 
-    applyCombatProgression(player, "run", { fear: 1 });
+   
 
     const quickEscapeBonus =
       (hasSkill(player, "quick_escape") ? 2 : 0) +

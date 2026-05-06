@@ -57,18 +57,35 @@ function recalculateStats(actor) {
   const run = p.run || 0;
   const threaten = p.threaten || 0;
   const search = p.search || 0;
+  const barfight = p.barfight || 0;
+  const drink = p.drink || 0;
+  const repair = p.repair || 0;
 
   actor.stats = {
-    strength: Math.max(1, 1 + Math.floor(attack / 5) + Math.floor(threaten / 10)),
-    defense: Math.max(1, 1 + Math.floor(defend / 5) - Math.floor(attack / 20)),
-    dexterity: Math.max(1, 1 + Math.floor(run / 5) + Math.floor(search / 15)),
-    presence: Math.max(1, 1 + Math.floor(threaten / 5) + Math.floor(defend / 20))
+    strength: Math.max(
+      1,
+      2 + Math.floor(attack / 5) + Math.floor(barfight / 3) + Math.floor(threaten / 10)
+    ),
+
+    defense: Math.max(
+      1,
+      1 + Math.floor(defend / 5) + Math.floor(repair / 10) - Math.floor(attack / 20) - Math.floor(barfight / 10)
+    ),
+
+    dexterity: Math.max(
+      1,
+      3 + Math.floor(run / 5) + Math.floor(search / 15)
+    ),
+
+    presence: Math.max(
+      1,
+      2 + Math.floor(threaten / 5) + Math.floor(defend / 20) + Math.floor(drink / 10)
+    )
   };
 }
-
 function recalculateTraits(actor) {
   const p = actor.progression.actionPoints || {};
-
+const eat = p.eat || 0;
   const attack = p.attack || 0;
   const defend = p.defend || 0;
   const run = p.run || 0;
@@ -80,7 +97,7 @@ function recalculateTraits(actor) {
   const barfight = p.barfight || 0;
 
   actor.traits = {
-    honor: Math.max(0, Math.floor(defend / 2) + repair + help - Math.floor(threaten / 2) - barfight),
+    honor: Math.max(0, Math.floor(defend / 2) + repair + help + eat - Math.floor(threaten / 2) - barfight),
     greed: Math.max(0, search + Math.floor(drink / 3)),
     fear: Math.max(0, Math.floor(run / 2)),
     influence: Math.max(0, threaten + Math.floor(defend / 3)),
