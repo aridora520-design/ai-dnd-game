@@ -17,8 +17,9 @@ function createBaseLocationState() {
 
 const world = {
   village: {
-    description: "You are in the Village. Paths lead to the Bar and Street.",
-    paths: ["bar", "street"]
+    name: "Greyhaven",
+    description: "You are in Greyhaven Village, the main settlement. Paths lead to the Bar, Street, Outer Farms, and Blackwood Forest.",
+    paths: ["bar", "street", "outerfarms", "blackwood"]
   },
   bar: {
     description: "You are inside the Bar. It smells like old ale and warm food.",
@@ -28,9 +29,33 @@ const world = {
     description: "You stand on the Street. The forest lies ahead.",
     paths: ["village", "forest"]
   },
-  forest: {
+    forest: {
     description: "You are in the Forest.",
     paths: ["street"]
+  },
+
+  outerfarms: {
+    name: "Outer Farms",
+    description: "You stand among the Outer Farms that feed Greyhaven. If this place falls, the village may starve.",
+    paths: ["village", "ashpass"]
+  },
+
+  blackwood: {
+    name: "Blackwood Forest",
+    description: "You enter Blackwood Forest. The trees are thick, dark, and strangely quiet.",
+    paths: ["village", "hollowruins"]
+  },
+
+  ashpass: {
+    name: "Ash Pass",
+    description: "You reach Ash Pass, a cold mountain route covered in grey dust and old bones.",
+    paths: ["outerfarms"]
+  },
+
+  hollowruins: {
+    name: "Hollow Ruins",
+    description: "You stand before the Hollow Ruins. Something ancient waits beneath the broken stone.",
+    paths: ["blackwood"]
   }
 };
 
@@ -55,6 +80,11 @@ function createNewWorldState() {
       village: {
         ...createBaseLocationState(),
         npcs: ["Old Villager", "Worried Farmer", "Passing Guard"],
+        hp: 100,
+        maxHp: 100,
+        status: "stable",
+        rebuildProject: null,
+        renameVote: null,
         stateFlags: {
           crowdUneasy: false,
           hunterSavedRumor: false,
@@ -106,6 +136,47 @@ function createNewWorldState() {
           lastForestEventType: null,
 
           goblinCorpsesDecayAtTurn: null
+        }
+      },
+
+      outerfarms: {
+        ...createBaseLocationState(),
+        npcs: ["Farmhand", "Old Farmer", "Hungry Dog"],
+        hp: 100,
+        maxHp: 100,
+        status: "stable",
+        rebuildProject: null,
+        renameVote: null,
+        stateFlags: {
+          cropsDamaged: false,
+          foodShortage: false
+        }
+      },
+
+      blackwood: {
+        ...createBaseLocationState(),
+        npcs: ["Blackwood Wolf"],
+        stateFlags: {
+          forestDanger: 1,
+          strangeWhispers: false
+        }
+      },
+
+      ashpass: {
+        ...createBaseLocationState(),
+        npcs: [],
+        stateFlags: {
+          passBlocked: false,
+          ashStormActive: false
+        }
+      },
+
+      hollowruins: {
+        ...createBaseLocationState(),
+        npcs: [],
+        stateFlags: {
+          sealedDoorFound: false,
+          ancientPresenceAwake: false
         }
       }
     },

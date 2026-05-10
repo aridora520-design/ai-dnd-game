@@ -1,69 +1,68 @@
 {
   "time": {
-    "day": 1,
-    "hour": 20,
-    "turn": 12
+    "day": 6,
+    "hour": 19,
+    "turn": 131
   },
   "goblinAlive": true,
   "goblinHp": 40,
   "goblinCorpses": 0,
-  "forestPotionFound": false,
+  "forestPotionFound": true,
   "eventLog": [
-    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-    "Hunt attempts: \"help\"",
-    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-    "Hunt helps calm the situation. The guards lower their suspicion.",
-    "Hunt attempts: \"help\"",
-    "Hunt feels the pressure of the crackdown as guards watch every movement on the street.",
-    "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
-    "Hunt hesitates while the guards take control of the scene.",
-    "Hunt travels to street.",
-    "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+    "Hunt repairs Outer Farms. HP: 100/100.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt travels to outerfarms.",
+    "Hunt repairs Outer Farms. HP: 92/100.",
+    "Hunt attempts: \"repair outer farms\"",
     "Hunt travels to village.",
-    "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-    "Hunt attempts: \"help\"",
-    "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble.",
-    "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
-    "The bar takes 15 damage. HP: 60/100. Status: damaged.",
-    "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-    "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them.",
-    "The bar takes 25 damage. HP: 75/100. Status: standing.",
-    "Hunt attempts: \"barfight\"",
-    "Hunt waits and watches the world move around them.",
-    "Hunt attempts: \"wait\"",
-    "[CHAIN EVENT — STREET] The chase spills into the street. The thief darts between carts and townsfolk, trying to disappear.",
-    "Hunt lets the moment pass. The thief escapes into the street.",
-    "[EVENT — BAR] A quick-handed thief snatches a coin purse and bolts toward the door.",
-    "Hunt travels to bar.",
-    "The world begins. The village waits in silence."
+    "Hunt travels to outerfarms.",
+    "Hunt travels to village.",
+    "Hunt travels to street.",
+    "Hunt wants to repair Outer Farms, but is too far away.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt repairs Outer Farms. HP: 82/100.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt travels to forest.",
+    "Hunt travels to street.",
+    "Hunt travels to village.",
+    "Hunt travels to outerfarms.",
+    "Hunt travels to ashpass.",
+    "Hunt repairs Outer Farms. HP: 72/100.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Outerfarms does not currently need repairs.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Outerfarms does not currently need repairs.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt travels to outerfarms.",
+    "Hunt travels to village.",
+    "Hunt travels to outerfarms.",
+    "Outerfarms does not currently need repairs.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt travels to village.",
+    "Hunt travels to outerfarms.",
+    "Hunt travels to village.",
+    "Hunt travels to street.",
+    "Outerfarms does not currently need repairs.",
+    "Hunt attempts: \"repair outer farms\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood."
   ],
   "locationStates": {
     "village": {
-      "activeEvent": {
-        "id": "village_tavern_gossip",
-        "name": "Tavern Gossip",
-        "chainId": "village_consequence",
-        "phase": 1,
-        "location": "village",
-        "phaseLabel": "gossip",
-        "createdAt": 1777870354759,
-        "expiresInMs": 600000,
-        "text": "The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
-        "involvedNpc": [
-          "Old Villager",
-          "Worried Farmer"
-        ],
-        "tags": [
-          "village",
-          "gossip"
-        ],
-        "nextOnSuccess": null,
-        "nextOnMixed": null,
-        "nextOnFail": null,
-        "nextOnIgnore": null
-      },
+      "activeEvent": null,
       "recentHistory": [
-        "[EVENT — VILLAGE] The villagers are already gossiping about the damage at the bar. Apparently no one agrees on who was most to blame.",
+        "Hunt repairs Outer Farms. HP: 92/100.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Hunt travels to village.",
+        "Outerfarms does not currently need repairs.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt travels to village.",
         "Hunt travels to village."
       ],
       "npcs": [
@@ -83,24 +82,29 @@
         "crowdUneasy": false,
         "hunterSavedRumor": false,
         "hunterAbandonedRumor": false,
-        "tavernTroubleRumor": true,
+        "tavernTroubleRumor": false,
         "rebuildingActive": false,
         "rebuildingEndsAtTurn": null
-      }
+      },
+      "hp": 100,
+      "maxHp": 100,
+      "status": "stable",
+      "rebuildProject": null,
+      "renameVote": null
     },
     "bar": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-        "Hunt attempts: \"help\"",
-        "Hunt backs off while the bar tears itself apart. The disturbance spills toward the street.",
+        "Hunt's contribution completes the rebuild. The bar stands again.",
+        "The old bar is gone. The only options now are to clear the ruins or rebuild something new.",
+        "The bar collapses into ruins. The old bar is gone.",
+        "The bar takes 15 damage. HP: 10/100. Status: critical.",
+        "The bar takes 15 damage. HP: 25/100. Status: critical.",
+        "The bar takes 15 damage. HP: 40/100. Status: damaged.",
+        "The bar takes 15 damage. HP: 45/100. Status: damaged.",
         "The bar takes 15 damage. HP: 60/100. Status: damaged.",
         "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-        "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them.",
-        "The bar takes 25 damage. HP: 75/100. Status: standing.",
-        "Hunt attempts: \"barfight\"",
-        "Hunt waits and watches the world move around them.",
-        "Hunt attempts: \"wait\""
+        "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them."
       ],
       "npcs": [
         "Bartender Rowan",
@@ -117,7 +121,7 @@
         "contributions": 0
       },
       "stateFlags": {
-        "barDamaged": true,
+        "barDamaged": false,
         "bartenderHostileTo": [
           "Hunt"
         ],
@@ -133,24 +137,56 @@
         "barRepairProgress": 0,
         "barRepairNeeded": 0
       },
-      "hp": 60,
+      "hp": 100,
       "maxHp": 100,
-      "form": "old_bar",
-      "status": "damaged"
+      "form": "rebuilt_bar",
+      "status": "standing",
+      "rebuildProject": null
     },
     "street": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "street_cart",
+        "name": "Runaway Cart",
+        "chainId": "cart_chain",
+        "phase": 1,
+        "location": "street",
+        "phaseLabel": "runaway",
+        "createdAt": 1778388042136,
+        "expiresInMs": 600000,
+        "text": "A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "involvedNpc": [
+          "Cart Driver",
+          "Town Guard"
+        ],
+        "tags": [
+          "environment",
+          "street"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_debris",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_debris",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_debris",
+          "location": "street"
+        }
+      },
       "recentHistory": [
-        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-        "Hunt attempts: \"help\"",
-        "Hunt offers help.\nCOMMANDS\n- look\n- attack\n- defend\n- run\n- search\n- rest\n- drink\n- eat\n- threaten\n- repair\n- rebuild bar\n\nHelping also calms guards when they are on alert.",
-        "Hunt helps calm the situation. The guards lower their suspicion.",
-        "Hunt attempts: \"help\"",
-        "Hunt feels the pressure of the crackdown as guards watch every movement on the street.",
-        "[CHAIN EVENT — STREET] The guards tighten control of the street. People back away, and every sudden move draws attention.",
-        "Hunt hesitates while the guards take control of the scene.",
         "Hunt travels to street.",
-        "[CHAIN EVENT — STREET] Boots pound outside. Town guards push toward the bar entrance, demanding to know who started the trouble."
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "The runaway cart smashes into the street corner in a burst of wood and cargo.",
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "Hunt travels to street.",
+        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street."
       ],
       "npcs": [
         "Town Guard",
@@ -166,14 +202,25 @@
         "contributions": 0
       },
       "stateFlags": {
-        "cartCrashed": false,
-        "guardsAlert": true,
+        "cartCrashed": true,
+        "guardsAlert": false,
         "blockedUntilTurn": null
       }
     },
     "forest": {
       "activeEvent": null,
-      "recentHistory": [],
+      "recentHistory": [
+        "Hunt wants to repair Outer Farms, but is too far away.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt repairs Outer Farms. HP: 82/100.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt travels to forest.",
+        "Outerfarms does not currently need repairs.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt searches the forest and gathers 2 wood and 1 stone.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 1 wood."
+      ],
       "npcs": [
         "Goblin"
       ],
@@ -194,6 +241,106 @@
         "forestSpawnCooldown": 0,
         "lastForestEventType": null,
         "goblinCorpsesDecayAtTurn": null
+      }
+    },
+    "outerfarms": {
+      "activeEvent": null,
+      "recentHistory": [
+        "Hunt repairs Outer Farms. HP: 100/100.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Hunt travels to outerfarms.",
+        "Hunt travels to outerfarms.",
+        "Hunt travels to outerfarms.",
+        "Hunt repairs Outer Farms. HP: 72/100.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Outerfarms does not currently need repairs.",
+        "Hunt attempts: \"repair outer farms\"",
+        "Outerfarms does not currently need repairs."
+      ],
+      "npcs": [
+        "Farmhand",
+        "Old Farmer",
+        "Hungry Dog"
+      ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
+      "stateFlags": {
+        "cropsDamaged": false,
+        "foodShortage": false
+      },
+      "hp": 100,
+      "maxHp": 100,
+      "status": "stable",
+      "rebuildProject": {
+        "active": true,
+        "progress": 0,
+        "required": 100,
+        "type": "rebuild_outerfarms"
+      },
+      "renameVote": null
+    },
+    "blackwood": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [
+        "Blackwood Wolf"
+      ],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
+      "stateFlags": {
+        "forestDanger": 1,
+        "strangeWhispers": false
+      }
+    },
+    "ashpass": {
+      "activeEvent": null,
+      "recentHistory": [
+        "Hunt travels to ashpass.",
+        "Hunt wants to rebuild Outer Farms, but has no usable resources.",
+        "Hunt attempts: \"rebuild outer farms\"",
+        "Hunt travels to ashpass."
+      ],
+      "npcs": [],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
+      "stateFlags": {
+        "passBlocked": false,
+        "ashStormActive": false
+      }
+    },
+    "hollowruins": {
+      "activeEvent": null,
+      "recentHistory": [],
+      "npcs": [],
+      "recovery": {
+        "status": "normal",
+        "recoveryType": null,
+        "repairEndsAtTurn": null,
+        "repairEndsAtDay": null,
+        "repairEndsAtHour": null,
+        "contributions": 0
+      },
+      "stateFlags": {
+        "sealedDoorFound": false,
+        "ancientPresenceAwake": false
       }
     }
   },

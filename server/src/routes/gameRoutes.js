@@ -184,6 +184,77 @@ function trackAction(player, actionType) {
         return 1;
     }
   }
+  function canReachLocation(player, targetLocation) {
+  return (
+    player.location === targetLocation ||
+    world[player.location]?.paths?.includes(targetLocation)
+  );
+}
+
+function rebuildDestroyedLocation({
+  player,
+  worldState,
+  targetLocation,
+  locationState,
+  displayName
+}) {
+  const canReach = canReachLocation(player, targetLocation);
+
+  if (!canReach) {
+    addWorldEvent(
+      worldState,
+      `${player.name} wants to rebuild ${displayName}, but is too far away.`,
+      player.location
+    );
+
+    return { success: false };
+  }
+
+  const goldUsed = player.resources.gold || 0;
+  const woodUsed = player.resources.wood || 0;
+  const stoneUsed = player.resources.stone || 0;
+
+  const progressValue =
+    goldUsed * 3 +
+    woodUsed * 2 +
+    stoneUsed * 4;
+
+  if (progressValue <= 0) {
+    addWorldEvent(
+      worldState,
+      `${player.name} wants to rebuild ${displayName}, but has no usable resources.`,
+      player.location
+    );
+
+    return { success: false };
+  }
+
+ player.resources.gold = 0; 
+  player.resources.wood = 0;
+  player.resources.stone = 0;
+
+  locationState.hp += progressValue;
+
+  if (locationState.hp >= locationState.maxHp) {
+    locationState.hp = locationState.maxHp;
+    locationState.status = "stable";
+    locationState.rebuildProject = null;
+
+    addWorldEvent(worldState, `${displayName} has been rebuilt.`, targetLocation);
+  } else {
+    locationState.status = "rebuilding";
+
+    addWorldEvent(
+      worldState,
+      `${displayName} rebuild progress: ${locationState.hp}/${locationState.maxHp}`,
+      targetLocation
+    );
+  }
+
+  updateReputation(player, { honor: 2 });
+
+  return { success: true };
+}
   
   function spawnQueuedForestEncounterIfNeeded(worldState, player) {
     const forestFlags = worldState.locationStates?.forest?.stateFlags;
@@ -533,6 +604,30 @@ function trackAction(player, actionType) {
     const interpreted = interpretAction(rawAction);
     const reaction = classifyReaction(rawAction);
     const lowerAction = rawAction.toLowerCase();
+     if (
+  lowerAction.startsWith("repair ") ||
+  lowerAction.startsWith("rebuild ") ||
+  lowerAction.includes("fix ")
+) {
+  interpreted.type = "repair";
+
+  const targetText = lowerAction
+    .replace("repair ", "")
+    .replace("rebuild ", "")
+    .replace("fix ", "")
+    .trim();
+
+  const matchedLocationKey = Object.keys(world).find(locationKey => {
+    const locationName = world[locationKey]?.name || locationKey;
+
+    return (
+      targetText === locationKey ||
+      targetText === locationName.toLowerCase()
+    );
+  });
+
+  interpreted.target = matchedLocationKey || player.location;
+}
   const titleActionMap = {
   "defend village": "title_defend_village",
   "shield ally": "title_shield_ally",
@@ -558,16 +653,6 @@ function trackAction(player, actionType) {
 if (titleActionMap[lowerAction]) {
   interpreted.type = titleActionMap[lowerAction];
 }
-    if (
-      lowerAction.includes("repair bar") ||
-      lowerAction.includes("rebuild bar") ||
-      lowerAction.includes("fix bar") ||
-      lowerAction.includes("repair tavern") ||
-      lowerAction.includes("rebuild tavern")
-    ) {
-      interpreted.type = "repair";
-      interpreted.target = "bar";
-    }
   
     syncTimedWorld(worldState);
   
@@ -860,129 +945,106 @@ Helping also calms guards when they are on alert.${recoveryHelpText}`;
       advanceAndSync(worldState, 1, "barfight", player.location);
   
     } else if (interpreted.type === "repair") {
-      trackAction(player, "repair");
-      
-      let targetLocation = interpreted.target || player.location;
-  
-      if (
-        lowerAction.includes("bar") ||
-        lowerAction.includes("tavern")
-      ) {
-        targetLocation = "bar";
-      }
-  
-      const contributionAmount = getRecoveryContributionAmount(interpreted);
-  
-      player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
-  
-      const barState = ensureLocationHp(worldState, "bar");
-      const isDestroyedBar = targetLocation === "bar" && barState.status === "destroyed";
-  
-      if (isDestroyedBar && !barState.rebuildProject) {
-        barState.rebuildProject = {
-          active: true,
-          progress: 0,
-          required: 100,
-          type: "rebuild_bar"
-        };
-      }
-  
-      if (isDestroyedBar) {
-        const canReachBar =
-          player.location === "bar" ||
-          world[player.location]?.paths?.includes("bar");
-  
-        if (!canReachBar) {
-          addWorldEvent(
-            worldState,
-            `${player.name} wants to rebuild the bar, but they are too far away. Move adjacent to the bar first.`,
-            player.location
-          );
-  
-          advanceAndSync(worldState, 1, "failed-rebuild-distance", player.location);
-          savePlayer(player);
-          saveWorldState(worldState);
-          return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-        }
-  
-        const goldUsed = player.resources.gold || 0;
-        const woodUsed = player.resources.wood || 0;
-        const stoneUsed = player.resources.stone || 0;
-  
-        const progressValue =
-          goldUsed * 3 +
-          woodUsed * 2 +
-          stoneUsed * 4;
-  
-        if (progressValue <= 0) {
-          addWorldEvent(
-            worldState,
-            `${player.name} wants to rebuild the bar, but has no usable resources.\nGather gold from goblins, and wood or stone from the forest.`,
-            player.location
-          );
-  
-          advanceAndSync(worldState, 1, "failed-rebuild-no-resources", player.location);
-          savePlayer(player);
-          saveWorldState(worldState);
-          return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-        }
-  
-        player.resources.gold = 0;
-        player.resources.wood = 0;
-        player.resources.stone = 0;
-  
-        const hpRepairResult = repairLocation(worldState, "bar", progressValue);
-  
-        addWorldEvent(
-          worldState,
-          `${player.name} pours everything they have into rebuilding the bar.\nUsed: ${goldUsed} gold, ${woodUsed} wood, ${stoneUsed} stone.\nRebuild progress added: ${progressValue}.\n${hpRepairResult.text}`,
-          player.location
-        );
-  
-        updateReputation(player, { honor: 2 });
-  
-        if (hpRepairResult.rebuilt) {
-          worldState.locationStates.bar.stateFlags.barDamaged = false;
-          worldState.locationStates.bar.stateFlags.barRepairing = false;
-          worldState.locationStates.village.stateFlags.tavernTroubleRumor = false;
-  
-          addWorldEvent(
-            worldState,
-            `${player.name}'s contribution completes the rebuild. The bar stands again.`,
-            "bar"
-          );
-        }
-  
-        advanceAndSync(worldState, 1, "rebuild-bar", player.location);
-        savePlayer(player);
-        saveWorldState(worldState);
-        return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-      }
-  
-      if (targetLocation === "bar" && barState.hp < barState.maxHp) {
-        const hpRepairResult = repairLocation(worldState, "bar", contributionAmount * 10);
-        addWorldEvent(worldState, hpRepairResult.text, player.location);
-        updateReputation(player, { honor: 1 });
-  
-        advanceAndSync(worldState, 1, "repair-bar", player.location);
-        savePlayer(player);
-        saveWorldState(worldState);
-        return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
-      }
-  
-      const repairResult = contributeToRecovery(worldState, targetLocation, {
-        actor: player.name,
-        amount: contributionAmount,
-        type: interpreted.recoveryAction || "labor"
-      });
-  
-      addWorldEvent(worldState, repairResult.text, player.location);
-  
-      if (repairResult.success) {
-        updateReputation(player, { honor: 1 });
-      }
-  
-      advanceAndSync(worldState, 1, "repair", player.location);
+  trackAction(player, "repair");
+
+  let targetLocation = interpreted.target || player.location;
+  const contributionAmount = getRecoveryContributionAmount(interpreted);
+
+  player.resources = player.resources || { gold: 0, wood: 0, stone: 0 };
+
+  const targetState = worldState.locationStates[targetLocation];
+  const targetName = world[targetLocation]?.name || targetLocation;
+
+  if (!targetState) {
+    addWorldEvent(
+      worldState,
+      `${player.name} tries to repair ${targetLocation}, but that place does not exist.`,
+      player.location
+    );
+
+    advanceAndSync(worldState, 1, "repair-invalid-location", player.location);
+    savePlayer(player);
+    saveWorldState(worldState);
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
+
+  const isDestroyedTarget = targetState.status === "destroyed";
+
+  if (isDestroyedTarget && !targetState.rebuildProject) {
+    targetState.rebuildProject = {
+      active: true,
+      progress: 0,
+      required: targetState.maxHp || 100,
+      type: `rebuild_${targetLocation}`
+    };
+  }
+
+  if (isDestroyedTarget) {
+    rebuildDestroyedLocation({
+      player,
+      worldState,
+      targetLocation,
+      locationState: targetState,
+      displayName: targetName
+    });
+
+    advanceAndSync(worldState, 1, `rebuild-${targetLocation}`, player.location);
+    savePlayer(player);
+    saveWorldState(worldState);
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
+
+  if (targetState.hp != null && targetState.maxHp != null && targetState.hp < targetState.maxHp) {
+    const canReach = canReachLocation(player, targetLocation);
+
+if (!canReach) {
+  addWorldEvent(
+    worldState,
+    `${player.name} wants to repair ${targetName}, but is too far away.`,
+    player.location
+  );
+
+  advanceAndSync(worldState, 1, `failed-repair-distance-${targetLocation}`, player.location);
+  savePlayer(player);
+  saveWorldState(worldState);
+  return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+}
+    targetState.hp = Math.min(targetState.maxHp, targetState.hp + contributionAmount * 10);
+
+    if (targetState.hp >= targetState.maxHp) {
+      targetState.status = "stable";
+    } else {
+      targetState.status = "damaged";
+    }
+
+    addWorldEvent(
+      worldState,
+      `${player.name} repairs ${targetName}. HP: ${targetState.hp}/${targetState.maxHp}.`,
+      player.location
+    );
+
+    updateReputation(player, { honor: 1 });
+
+    advanceAndSync(worldState, 1, `repair-${targetLocation}`, player.location);
+    savePlayer(player);
+    saveWorldState(worldState);
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
+
+  const repairResult = contributeToRecovery(worldState, targetLocation, {
+    actor: player.name,
+    amount: contributionAmount,
+    type: interpreted.recoveryAction || "labor"
+  });
+
+  addWorldEvent(worldState, repairResult.text, player.location);
+
+  if (repairResult.success) {
+    updateReputation(player, { honor: 1 });
+  }
+
+  advanceAndSync(worldState, 1, "repair", player.location);
+
   
     } else if (interpreted.type === "inspect-recovery") {
       trackAction(player, "inspect-recovery");
@@ -1021,6 +1083,32 @@ Helping also calms guards when they are on alert.${recoveryHelpText}`;
       maybeTriggerLocationEvent(worldState, player.location, player, "idle");
       spawnQueuedForestEncounterIfNeeded(worldState, player);
       advanceAndSync(worldState, 1, "wait", player.location);
+      } else if (lowerAction.includes("damage outer farms")) {
+
+  const farms = worldState.locationStates.outerfarms;
+
+  farms.hp -= 25;
+
+  if (farms.hp <= 0) {
+    farms.hp = 0;
+    farms.status = "destroyed";
+
+    addWorldEvent(
+      worldState,
+      "Outer Farms has been destroyed.",
+      "outerfarms"
+    );
+  } else {
+    farms.status = "damaged";
+
+    addWorldEvent(
+      worldState,
+      `Outer Farms damaged. HP: ${farms.hp}/${farms.maxHp}`,
+      "outerfarms"
+    );
+  }
+
+  advanceAndSync(worldState, 1, "damage-outer-farms", player.location);
   } else if (interpreted.type === "title_defend_village") {
   trackAction(player, "defend");
 

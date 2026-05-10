@@ -97,6 +97,29 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
     const lines = [];
 
     if (!locationState) return lines;
+    if (locationState.hp != null && locationState.maxHp != null) {
+  lines.push(`Region HP: ${locationState.hp}/${locationState.maxHp}.`);
+
+  if (locationState.status === "destroyed") {
+  const regionName = world[locationKey]?.name || locationKey;
+  const rebuildCommand = `rebuild ${regionName.toLowerCase()}`;
+  const required = locationState.rebuildProject?.required || locationState.maxHp || 100;
+
+  lines.push("This region has been destroyed and must be rebuilt.");
+  lines.push(`Type: ${rebuildCommand}`);
+  lines.push(`Rebuild cost: ${required} progress total.`);
+  lines.push("Gold = 3 progress each. Wood = 2 progress each. Stone = 4 progress each.");
+  lines.push("Gather resources by searching the forest.");
+}
+
+  if (locationState.status === "damaged") {
+    lines.push("This region shows signs of serious damage.");
+  }
+
+  if (locationState.status === "rebuilding") {
+    lines.push("Players are rebuilding this region.");
+  }
+}
 
     if (locationKey === "bar") {
       const flags = locationState.stateFlags || {};
@@ -229,7 +252,21 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
           <span>Bar</span>
           <strong>${barState.status || "unknown"}</strong>
         </div>
+        <div class="status-line">
+          <span>Greyhaven HP</span>
+          <strong>
+            ${worldState.locationStates.village?.hp ?? "?"}/
+            ${worldState.locationStates.village?.maxHp ?? "?"}
+          </strong>
+        </div>
 
+        <div class="status-line">
+          <span>Outer Farms HP</span>
+          <strong>
+            ${worldState.locationStates.outerfarms?.hp ?? "?"}/
+            ${worldState.locationStates.outerfarms?.maxHp ?? "?"}
+          </strong>
+        </div>
         <div class="status-line">
           <span>Bar HP</span>
           <strong>${barState.hp ?? "?"}/${barState.maxHp ?? "?"}</strong>
@@ -754,7 +791,10 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
         <div class="top-bar">
           <div>
             <h1 class="hero-name">${player.name.toUpperCase()}</h1>
-            <p class="hero-meta"><strong>Location:</strong> ${player.location.toUpperCase()}</p>
+            <p class="hero-meta">
+  <strong>Location:</strong>
+  ${(world[player.location]?.name || player.location).toUpperCase()}
+</p>
           </div>
           <div class="top-meta">
             <p><strong>${isTutorial ? "Dream Time" : "World Time"}:</strong> ${formatWorldTime(worldState)}</p>
