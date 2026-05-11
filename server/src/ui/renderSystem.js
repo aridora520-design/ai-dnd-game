@@ -11,7 +11,13 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
       </div>
     `;
   }
-
+function getLocationDisplayName(worldState, locationKey) {
+  return (
+    worldState.locationNames?.[locationKey] ||
+    world[locationKey]?.name ||
+    locationKey
+  );
+}
   function buildLookDescription(player, worldState) {
     const locationKey = player.location;
     const location = world[locationKey];
@@ -101,7 +107,7 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
   lines.push(`Region HP: ${locationState.hp}/${locationState.maxHp}.`);
 
   if (locationState.status === "destroyed") {
-  const regionName = world[locationKey]?.name || locationKey;
+  const regionName = getLocationDisplayName(worldState, locationKey);
   const rebuildCommand = `rebuild ${regionName.toLowerCase()}`;
   const required = locationState.rebuildProject?.required || locationState.maxHp || 100;
 
@@ -244,6 +250,38 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
   }
 
   function renderWorldStatusHtml({ barState, worldState, isTutorial }) {
+    const activeRenameEntries = Object.entries(worldState.locationStates || {})
+  .filter(([key, state]) => state.renameVote?.active);
+
+function renderRenameVoteStatus(locationKey, locationState) {
+  const vote = locationState.renameVote;
+  const locationName = getLocationDisplayName(worldState, locationKey);
+
+  const msLeft = Math.max(0, (vote.endsAtTime || 0) - Date.now());
+  const minutesLeft = Math.floor(msLeft / 60000);
+  const secondsLeft = Math.floor((msLeft % 60000) / 1000);
+
+  const proposals = Object.values(vote.proposals || {});
+
+  return `
+    <div class="danger-box">
+      <strong>Rename Vote: ${locationName}</strong>
+      <p>Time left: ${minutesLeft}m ${String(secondsLeft).padStart(2, "0")}s</p>
+      ${
+        proposals.length === 0
+          ? `<p>No names proposed yet.</p>`
+          : `
+            <ul>
+              ${proposals.map(p => `
+                <li>${p.name}: ${p.votes || 0} vote(s)</li>
+              `).join("")}
+            </ul>
+          `
+      }
+      <p class="muted">Type <b>propose name New Name</b> or <b>vote name New Name</b>.</p>
+    </div>
+  `;
+}
     return `
       <section class="card world-card">
         <h3>World Status</h3>
@@ -276,7 +314,9 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
           <span>Guard Alert</span>
           <strong>${worldState.globalState?.guardsAlertLevel || 0}</strong>
         </div>
-
+        ${activeRenameEntries.map(([locationKey, locationState]) =>
+          renderRenameVoteStatus(locationKey, locationState)
+        ).join("")}
         ${barState.status === "destroyed" ? `
           <div class="danger-box">
             <strong>${isTutorial ? "Dream Bar Destroyed" : "Bar Rebuild Required"}</strong>
@@ -793,7 +833,7 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
             <h1 class="hero-name">${player.name.toUpperCase()}</h1>
             <p class="hero-meta">
   <strong>Location:</strong>
-  ${(world[player.location]?.name || player.location).toUpperCase()}
+  ${getLocationDisplayName(worldState, player.location).toUpperCase()}
 </p>
           </div>
           <div class="top-meta">
@@ -817,11 +857,44 @@ function createRenderSystem({ world, getOtherPlayersInSameLocation }) {
               </section>
 
               ${!isTutorial || playerName === "Hunt" ? `
-                <section class="card">
-                  <h3>World Controls</h3>
-                  ${!isTutorial ? `<a href="/rest?player=${encodeURIComponent(playerName)}">Rest</a>` : ""}
-                  <a href="/reset-world?player=${encodeURIComponent(playerName)}" onclick="return confirm('Reset the whole world?')">Reset World</a>
-                </section>
+               <section class="card">
+              <h3>World Controls</h3>
+
+              ${!isTutorial ? `
+                <a href="/rest?player=${encodeURIComponent(playerName)}">
+                  Rest
+                </a>
+              ` : ""}
+
+              <a
+                href="/reset-world?player=${encodeURIComponent(playerName)}"
+                onclick="return confirm('Reset the whole world?')"
+              >
+                Reset World
+              </a>
+
+              ${Object.keys(worldState.locationStates || {}).some(locationKey =>
+  worldState.locationStates[locationKey]?.renameVote?.active &&
+  (
+    player.location === locationKey ||
+    world[player.location]?.paths?.includes(locationKey)
+  )
+) ? `
+                <form method="POST" action="/action?player=${encodeURIComponent(playerName)}">
+                  <input type="hidden" name="action" value="propose name ">
+                  <button type="submit" class="quick-action-button">
+                    Propose New Name
+                  </button>
+                </form>
+
+                <form method="POST" action="/action?player=${encodeURIComponent(playerName)}">
+                  <input type="hidden" name="action" value="vote name ">
+                  <button type="submit" class="quick-action-button">
+                    Vote For Name
+                  </button>
+                </form>
+              ` : ""}
+            </section>
               ` : ""}
 
               <section class="card">

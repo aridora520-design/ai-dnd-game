@@ -1,24 +1,24 @@
 {
   "name": "Hunt",
-  "location": "outerfarms",
-  "hp": 92,
+  "location": "village",
+  "hp": 100,
   "maxHp": 100,
   "inventory": [
     "Health Potion"
   ],
   "stats": {
     "strength": 2,
-    "defense": 2,
-    "dexterity": 6,
+    "defense": 1,
+    "dexterity": 5,
     "presence": 2
   },
   "reputation": {
     "title": "Unknown Figure",
-    "score": 106,
+    "score": 64,
     "breakdown": [
       {
         "title": "Known Opportunist",
-        "score": 106
+        "score": 64
       },
       {
         "title": "Unknown Figure",
@@ -26,56 +26,50 @@
       },
       {
         "title": "Unreliable Coward",
-        "score": -12
-      },
-      {
-        "title": "Protector of the Realm",
-        "score": -20
+        "score": 2
       },
       {
         "title": "Public Menace",
-        "score": -32
+        "score": -1
+      },
+      {
+        "title": "Protector of the Realm",
+        "score": -24
       },
       {
         "title": "Trusted Voice",
-        "score": -38
+        "score": -25
       }
     ]
   },
   "flags": {
     "knownTroublemaker": false,
     "helpedTownsfolk": false,
-    "bartenderBarred": true,
+    "bartenderBarred": false,
     "blockedFromStreet": false,
     "wantedByGuards": false,
     "completedIntroQuest": true
   },
   "resources": {
     "gold": 0,
-    "wood": 31,
-    "stone": 9
+    "wood": 0,
+    "stone": 0
   },
   "progression": {
     "actionCounts": {
-      "barfight": 1,
-      "repair": 16,
-      "wait": 2,
-      "search": 58,
-      "help": 1
+      "search": 30,
+      "repair": 1
     },
     "actionPoints": {
-      "barfight": 1,
-      "repair": 16,
-      "wait": 2,
-      "search": 58,
-      "help": 1
+      "search": 30,
+      "repair": 1
     }
   },
   "title": "Wanderer",
   "skills": [],
   "traits": {
-    "honor": 16,
-    "greed": 58,
+    "honor": 1,
+    "greed": 30,
     "fear": 0,
     "influence": 0,
     "chaos": 0

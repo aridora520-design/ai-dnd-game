@@ -1,67 +1,65 @@
 {
   "time": {
-    "day": 6,
-    "hour": 19,
-    "turn": 131
+    "day": 3,
+    "hour": 9,
+    "turn": 49
   },
   "goblinAlive": true,
   "goblinHp": 40,
   "goblinCorpses": 0,
   "forestPotionFound": true,
   "eventLog": [
-    "Hunt repairs Outer Farms. HP: 100/100.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt travels to outerfarms.",
-    "Hunt repairs Outer Farms. HP: 92/100.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt travels to village.",
-    "Hunt travels to outerfarms.",
+    "Hunt votes for tetsr.",
+    "Hunt proposes the new name: tetsr.",
+    "A public rename vote has started for bar. Players may now propose a new name.",
+    "bar has been rebuilt.",
+    "Hunt attempts: \"rebuild bar\"",
     "Hunt travels to village.",
     "Hunt travels to street.",
-    "Hunt wants to repair Outer Farms, but is too far away.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt repairs Outer Farms. HP: 82/100.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt travels to forest.",
-    "Hunt travels to street.",
     "Hunt travels to village.",
-    "Hunt travels to outerfarms.",
-    "Hunt travels to ashpass.",
-    "Hunt repairs Outer Farms. HP: 72/100.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Outerfarms does not currently need repairs.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Outerfarms does not currently need repairs.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt travels to outerfarms.",
+    "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+    "Hunt travels to bar.",
     "Hunt travels to village.",
-    "Hunt travels to outerfarms.",
-    "Outerfarms does not currently need repairs.",
-    "Hunt attempts: \"repair outer farms\"",
+    "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+    "[EVENT — BAR] A quick-handed thief snatches a coin purse and bolts toward the door.",
+    "Hunt travels to bar.",
     "Hunt travels to village.",
-    "Hunt travels to outerfarms.",
+    "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+    "Hunt travels to bar.",
     "Hunt travels to village.",
     "Hunt travels to street.",
-    "Outerfarms does not currently need repairs.",
-    "Hunt attempts: \"repair outer farms\"",
-    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
     "Hunt attempts: \"search\"",
     "Hunt searches the forest and gathers 1 wood.",
     "Hunt attempts: \"search\"",
-    "Hunt searches the forest and gathers 1 wood."
+    "Hunt searches the forest and gathers 3 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 1 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood and 1 stone.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 2 wood.",
+    "Hunt attempts: \"search\"",
+    "Hunt searches the forest and gathers 3 wood."
   ],
   "locationStates": {
     "village": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt repairs Outer Farms. HP: 92/100.",
-        "Hunt attempts: \"repair outer farms\"",
+        "Hunt votes for tetsr.",
+        "Hunt proposes the new name: tetsr.",
+        "Hunt attempts: \"rebuild bar\"",
         "Hunt travels to village.",
         "Hunt travels to village.",
         "Hunt travels to village.",
-        "Hunt travels to village.",
-        "Outerfarms does not currently need repairs.",
-        "Hunt attempts: \"repair outer farms\"",
         "Hunt travels to village.",
         "Hunt travels to village."
       ],
@@ -93,18 +91,49 @@
       "renameVote": null
     },
     "bar": {
-      "activeEvent": null,
+      "activeEvent": {
+        "id": "bar_thief",
+        "name": "Thief Incident",
+        "chainId": "thief_chain",
+        "phase": 1,
+        "location": "bar",
+        "phaseLabel": "snatch",
+        "createdAt": 1778529039126,
+        "expiresInMs": 600000,
+        "text": "A quick-handed thief snatches a coin purse and bolts toward the door.",
+        "involvedNpc": [
+          "Unknown Thief",
+          "Traveling Merchant"
+        ],
+        "tags": [
+          "crime",
+          "bar"
+        ],
+        "nextOnSuccess": null,
+        "nextOnMixed": {
+          "eventId": "street_chase",
+          "location": "street"
+        },
+        "nextOnFail": {
+          "eventId": "street_chase",
+          "location": "street"
+        },
+        "nextOnIgnore": {
+          "eventId": "street_chase",
+          "location": "street"
+        }
+      },
       "recentHistory": [
-        "Hunt's contribution completes the rebuild. The bar stands again.",
-        "The old bar is gone. The only options now are to clear the ruins or rebuild something new.",
-        "The bar collapses into ruins. The old bar is gone.",
-        "The bar takes 15 damage. HP: 10/100. Status: critical.",
-        "The bar takes 15 damage. HP: 25/100. Status: critical.",
-        "The bar takes 15 damage. HP: 40/100. Status: damaged.",
-        "The bar takes 15 damage. HP: 45/100. Status: damaged.",
-        "The bar takes 15 damage. HP: 60/100. Status: damaged.",
-        "[EVENT — BAR] The argument explodes. A stool flips, someone swings, and the whole room jolts into chaos.",
-        "Hunt starts a bar fight!\nTakes 8 damage.\nChaos rises. Honor may fall if this becomes a habit.\nBartender Rowan has had enough of them."
+        "A public rename vote has started for bar. Players may now propose a new name.",
+        "bar has been rebuilt.",
+        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+        "Hunt travels to bar.",
+        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+        "[EVENT — BAR] A quick-handed thief snatches a coin purse and bolts toward the door.",
+        "Hunt travels to bar.",
+        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand.",
+        "Hunt travels to bar.",
+        "Hunt arrives at the bar, but it has been destroyed. Only charred remains stand."
       ],
       "npcs": [
         "Bartender Rowan",
@@ -122,11 +151,9 @@
       },
       "stateFlags": {
         "barDamaged": false,
-        "bartenderHostileTo": [
-          "Hunt"
-        ],
-        "barOnFire": false,
-        "thiefActive": false,
+        "bartenderHostileTo": [],
+        "barOnFire": true,
+        "thiefActive": true,
         "guardsWatchingBar": false,
         "barRepairing": false,
         "barClosedUntilTurn": null,
@@ -139,54 +166,62 @@
       },
       "hp": 100,
       "maxHp": 100,
-      "form": "rebuilt_bar",
-      "status": "standing",
-      "rebuildProject": null
+      "form": "bar_ruins",
+      "status": "stable",
+      "rebuildProject": null,
+      "renameVote": {
+        "active": true,
+        "proposals": {
+          "tetsr": {
+            "name": "tetsr",
+            "proposedBy": "Hunt",
+            "votes": 1
+          }
+        },
+        "votes": {
+          "Hunt": "tetsr"
+        },
+        "endsAtTurn": null,
+        "endsAtTime": 1778529967167
+      }
     },
     "street": {
       "activeEvent": {
-        "id": "street_cart",
-        "name": "Runaway Cart",
-        "chainId": "cart_chain",
+        "id": "street_guard_stop",
+        "name": "Guard Confrontation",
+        "chainId": "guard_pressure",
         "phase": 1,
         "location": "street",
-        "phaseLabel": "runaway",
-        "createdAt": 1778388042136,
+        "phaseLabel": "stop",
+        "createdAt": 1778529023813,
         "expiresInMs": 600000,
-        "text": "A horse panics. A loaded cart jerks loose and barrels down the street.",
+        "text": "A town guard plants a spear in your path and demands to know what you’re up to.",
         "involvedNpc": [
-          "Cart Driver",
           "Town Guard"
         ],
         "tags": [
-          "environment",
+          "social",
           "street"
         ],
         "nextOnSuccess": null,
         "nextOnMixed": {
-          "eventId": "street_debris",
+          "eventId": "street_crackdown",
           "location": "street"
         },
         "nextOnFail": {
-          "eventId": "street_debris",
+          "eventId": "street_crackdown",
           "location": "street"
         },
         "nextOnIgnore": {
-          "eventId": "street_debris",
+          "eventId": "street_crackdown",
           "location": "street"
         }
       },
       "recentHistory": [
         "Hunt travels to street.",
         "Hunt travels to street.",
-        "Hunt travels to street.",
-        "Hunt travels to street.",
-        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street.",
-        "The runaway cart smashes into the street corner in a burst of wood and cargo.",
-        "Hunt travels to street.",
-        "Hunt travels to street.",
-        "Hunt travels to street.",
-        "[EVENT — STREET] A horse panics. A loaded cart jerks loose and barrels down the street."
+        "[EVENT — STREET] A town guard plants a spear in your path and demands to know what you’re up to.",
+        "Hunt travels to street."
       ],
       "npcs": [
         "Town Guard",
@@ -202,7 +237,7 @@
         "contributions": 0
       },
       "stateFlags": {
-        "cartCrashed": true,
+        "cartCrashed": false,
         "guardsAlert": false,
         "blockedUntilTurn": null
       }
@@ -210,16 +245,16 @@
     "forest": {
       "activeEvent": null,
       "recentHistory": [
-        "Hunt wants to repair Outer Farms, but is too far away.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Hunt repairs Outer Farms. HP: 82/100.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Hunt travels to forest.",
-        "Outerfarms does not currently need repairs.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Hunt searches the forest and gathers 2 wood and 1 stone.",
+        "Hunt searches the forest and gathers 3 wood and 1 stone.",
         "Hunt attempts: \"search\"",
-        "Hunt searches the forest and gathers 1 wood."
+        "Hunt searches the forest and gathers 1 wood.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 3 wood.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 1 wood.",
+        "Hunt attempts: \"search\"",
+        "Hunt searches the forest and gathers 1 wood and 1 stone.",
+        "Hunt attempts: \"search\""
       ],
       "npcs": [
         "Goblin"
@@ -245,18 +280,7 @@
     },
     "outerfarms": {
       "activeEvent": null,
-      "recentHistory": [
-        "Hunt repairs Outer Farms. HP: 100/100.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Hunt travels to outerfarms.",
-        "Hunt travels to outerfarms.",
-        "Hunt travels to outerfarms.",
-        "Hunt repairs Outer Farms. HP: 72/100.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Outerfarms does not currently need repairs.",
-        "Hunt attempts: \"repair outer farms\"",
-        "Outerfarms does not currently need repairs."
-      ],
+      "recentHistory": [],
       "npcs": [
         "Farmhand",
         "Old Farmer",
@@ -277,12 +301,7 @@
       "hp": 100,
       "maxHp": 100,
       "status": "stable",
-      "rebuildProject": {
-        "active": true,
-        "progress": 0,
-        "required": 100,
-        "type": "rebuild_outerfarms"
-      },
+      "rebuildProject": null,
       "renameVote": null
     },
     "blackwood": {
@@ -306,12 +325,7 @@
     },
     "ashpass": {
       "activeEvent": null,
-      "recentHistory": [
-        "Hunt travels to ashpass.",
-        "Hunt wants to rebuild Outer Farms, but has no usable resources.",
-        "Hunt attempts: \"rebuild outer farms\"",
-        "Hunt travels to ashpass."
-      ],
+      "recentHistory": [],
       "npcs": [],
       "recovery": {
         "status": "normal",

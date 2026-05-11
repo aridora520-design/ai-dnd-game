@@ -5,7 +5,12 @@ const {
   recordActorAction,
   recalculateActorProgression
 } = require("../systems/actorProgressionSystem");
-
+const {
+  startRenameVote,
+  submitRenameProposal,
+  voteForRename,
+  processRenameVotes
+} = require("../systems/renameVoteSystem");
 const { createTimeSystem } = require("../systems/timeSystem");
 const { createActionResolutionSystem } = require("../systems/actionResolutionSystem");
 const { createCombatSystem } = require("../systems/combatSystem");
@@ -123,9 +128,19 @@ function trackAction(player, actionType) {
 }
   
   function syncTimedWorld(worldState) {
-    ensureTimeState(worldState);
-    processTimedWorldChanges(worldState);
+  ensureTimeState(worldState);
+  processTimedWorldChanges(worldState);
+
+  const renameResults = processRenameVotes(worldState);
+
+  for (const result of renameResults) {
+    addWorldEvent(
+      worldState,
+      result.text,
+      result.locationKey
+    );
   }
+}
   
   function advanceAndSync(worldState, hours, reason, location) {
     advanceWorldTime(worldState, hours, reason, location);
@@ -190,7 +205,16 @@ function trackAction(player, actionType) {
     world[player.location]?.paths?.includes(targetLocation)
   );
 }
+function getReachableActiveRenameVoteLocation(player, worldState) {
+  return Object.keys(worldState.locationStates || {}).find(locationKey => {
+    const locationState = worldState.locationStates[locationKey];
 
+    return (
+      locationState.renameVote?.active &&
+      canReachLocation(player, locationKey)
+    );
+  });
+}
 function rebuildDestroyedLocation({
   player,
   worldState,
@@ -241,6 +265,13 @@ function rebuildDestroyedLocation({
     locationState.rebuildProject = null;
 
     addWorldEvent(worldState, `${displayName} has been rebuilt.`, targetLocation);
+    startRenameVote(worldState, targetLocation, 15);
+
+    addWorldEvent(
+      worldState,
+      `A public rename vote has started for ${displayName}. Players may now propose a new name.`,
+      targetLocation
+    );
   } else {
     locationState.status = "rebuilding";
 
@@ -670,7 +701,48 @@ if (titleActionMap[lowerAction]) {
       mentionsStab: lowerAction.includes("stab"),
       mentionsSlash: lowerAction.includes("slash")
     };
-  
+      if (lowerAction.startsWith("propose name ")) {
+      const proposedName = rawAction
+        .replace(/propose name/i, "")
+        .trim();
+
+      const result = submitRenameProposal(
+        worldState,
+        player,
+        getReachableActiveRenameVoteLocation(player, worldState) || player.location,
+        proposedName
+      );
+
+      addWorldEvent(worldState, result.text, player.location);
+
+      advanceAndSync(worldState, 1, "propose-rename", player.location);
+      savePlayer(player);
+      saveWorldState(worldState);
+
+      return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+    }
+      if (lowerAction.startsWith("vote name ")) {
+
+    const proposedName = rawAction
+      .replace(/vote name/i, "")
+      .trim();
+
+    const result = voteForRename(
+      worldState,
+      player,
+     getReachableActiveRenameVoteLocation(player, worldState) || player.location,
+      proposedName
+    );
+
+    addWorldEvent(worldState, result.text, player.location);
+
+    advanceAndSync(worldState, 1, "vote-rename", player.location);
+
+    savePlayer(player);
+    saveWorldState(worldState);
+
+    return res.redirect(`/?player=${encodeURIComponent(playerName)}`);
+  }
     if (interpreted.type === "say") {
       const othersHere = getOtherPlayersInSameLocation(player);
   
